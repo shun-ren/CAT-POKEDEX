@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#123b2a" />
+    <meta name="description" content="A privacy-first, pixel-art cat spotting field guide for Singapore." />
+    <meta property="og:title" content="CATDEX — Spot. Snap. Stash." />
+    <meta property="og:description" content="Build your own pixel-art field guide of cats spotted across Singapore." />
+    <meta property="og:image" content="./assets/og.png" />
+    <title>CATDEX — Spot. Snap. Stash.</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#home" aria-label="CATDEX home">
+          <span class="brand-mark" aria-hidden="true">C</span>
+          <span>
+            <strong>CATDEX</strong>
+            <small>SINGAPORE FIELD GUIDE</small>
+          </span>
+        </a>
+        <nav class="desktop-nav" aria-label="Main navigation">
+          <a class="active" href="#home">Field log</a>
+          <a href="#catalog">Catdex</a>
+          <a href="#map">Map</a>
+        </nav>
+        <button class="sound-button" id="soundButton" type="button" aria-label="Toggle interface sounds" aria-pressed="true">SFX ON</button>
+      </header>
+
+      <main>
+        <section class="hero" id="home">
+          <div class="hero-copy">
+            <p class="eyebrow"><span class="live-dot"></span> FIELD LOG // 02 SEP 2026</p>
+            <h1>Every cat<br />has a <em>story.</em></h1>
+            <p class="hero-lede">Spot a neighbourhood cat, snap a photo, and stash its pixel portrait in your personal Singapore field guide.</p>
+            <div class="hero-actions">
+              <button class="primary-button" type="button" data-open-capture><span aria-hidden="true">＋</span> STASH A CAT</button>
+              <a class="text-link" href="#catalog">VIEW YOUR CATDEX <span aria-hidden="true">→</span></a>
+            </div>
+            <div class="privacy-note"><span aria-hidden="true">◈</span><span><strong>Privacy by design</strong>Only a broad Singapore region is saved — never an exact pin or address.</span></div>
+          </div>
+
+          <div class="hero-art" aria-label="Pixel-art cat scout card">
+            <div class="pixel-frame">
+              <div class="pixel-cat sprite-0" role="img" aria-label="Pixel-art orange tabby cat"></div>
+              <span class="scan-line"></span>
+              <span class="corner corner-tl"></span><span class="corner corner-tr"></span><span class="corner corner-bl"></span><span class="corner corner-br"></span>
+            </div>
+            <div class="status-chip"><span>NEW SIGHTING READY</span><strong>+</strong></div>
+            <span class="deco-paw paw-one" aria-hidden="true">✦</span>
+            <span class="deco-paw paw-two" aria-hidden="true">✦</span>
+          </div>
+        </section>
+
+        <section class="stats-strip" aria-label="Collection progress">
+          <article>
+            <span class="stat-icon" aria-hidden="true">▦</span>
+            <div><strong id="breedCount">4 <small>/ 73</small></strong><span>BREEDS UNLOCKED</span></div>
+          </article>
+          <article>
+            <span class="stat-icon coral" aria-hidden="true">◎</span>
+            <div><strong id="sightingCount">6</strong><span>CATS STASHED</span></div>
+          </article>
+          <article>
+            <span class="stat-icon gold" aria-hidden="true">⌁</span>
+            <div><strong id="regionCount">4 <small>/ 6</small></strong><span>REGIONS EXPLORED</span></div>
+          </article>
+          <div class="progress-wrap">
+            <div><span>CATDEX COMPLETION</span><strong id="completionLabel">5%</strong></div>
+            <div class="progress-track" aria-label="Catdex completion"><span id="completionBar" style="width: 5%"></span></div>
+          </div>
+        </section>
+
+        <section class="section catalog-section" id="catalog">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">YOUR COLLECTION</p>
+              <h2>The Catdex</h2>
+              <p>One portrait, one memory, one more cat discovered.</p>
+            </div>
+            <button class="secondary-button" type="button" data-open-capture>＋ NEW SIGHTING</button>
+          </div>
+
+          <div class="catalog-tools">
+            <label class="search-box"><span aria-hidden="true">⌕</span><span class="sr-only">Search cats</span><input id="searchInput" type="search" placeholder="Search breed or nickname…" /></label>
+            <label class="filter-box"><span>REGION</span><select id="regionFilter"><option value="all">All regions</option></select></label>
+          </div>
+
+          <div class="cat-grid" id="catGrid" aria-live="polite"></div>
+          <p class="empty-state" id="emptyState" hidden>No cats match that search. Try another name or region.</p>
+        </section>
+
+        <section class="section map-section" id="map">
+          <div class="section-heading map-heading">
+            <div>
+              <p class="eyebrow">PRIVACY-SAFE EXPLORATION</p>
+              <h2>Singapore sightings</h2>
+              <p>Every marker represents an entire region, never a cat’s precise location.</p>
+            </div>
+            <div class="map-legend"><span><i class="unlocked-dot"></i> DISCOVERED</span><span><i></i> UNEXPLORED</span></div>
+          </div>
+          <div class="map-board">
+            <img src="./assets/singapore-regions.png" alt="A playful, simplified pixel-art map of broad Singapore regions" />
+            <div class="region-marker west" data-region="West"><b>WEST</b><span>2 CATS</span></div>
+            <div class="region-marker north" data-region="North"><b>NORTH</b><span>1 CAT</span></div>
+            <div class="region-marker central" data-region="Central"><b>CENTRAL</b><span>2 CATS</span></div>
+            <div class="region-marker east" data-region="East"><b>EAST</b><span>1 CAT</span></div>
+            <div class="region-marker northeast muted" data-region="North-East"><b>NORTH-EAST</b><span>UNEXPLORED</span></div>
+            <div class="region-marker south muted" data-region="Southern Islands"><b>SOUTH</b><span>UNEXPLORED</span></div>
+          </div>
+          <div class="map-privacy"><span aria-hidden="true">▣</span><p><strong>Why only broad regions?</strong> Exact locations can put community cats at risk. CATDEX discards precise coordinates and keeps only one of six general areas.</p></div>
+        </section>
+
+        <section class="future-banner">
+          <span class="future-icon" aria-hidden="true">✦</span>
+          <div><p class="eyebrow">BUILT TO GROW</p><h2>Cats first. More creatures later.</h2><p>The collection engine is designed around species packs, so dogs, birds, butterflies and other wildlife can join the field guide in future releases.</p></div>
+          <div class="future-tags"><span class="active">CATS // LIVE</span><span>DOGS // LATER</span><span>BIRDS // LATER</span></div>
+        </section>
+      </main>
+
+      <footer>
+        <a class="brand footer-brand" href="#home"><span class="brand-mark">C</span><span><strong>CATDEX</strong><small>SPOT. SNAP. STASH.</small></span></a>
+        <p>Made for curious cat spotters. Respect every cat and its space.</p>
+        <span>© 2026 CATDEX // SG</span>
+      </footer>
+
+      <nav class="mobile-nav" aria-label="Mobile navigation">
+        <a href="#home" class="active"><span>⌂</span>LOG</a><a href="#catalog"><span>▦</span>CATDEX</a><button type="button" data-open-capture><span>＋</span>STASH</button><a href="#map"><span>⌁</span>MAP</a>
+      </nav>
+    </div>
+
+    <dialog class="capture-modal" id="captureModal">
+      <form method="dialog" class="modal-card" id="captureForm">
+        <div class="modal-header">
+          <div><p class="eyebrow">NEW FIELD ENTRY</p><h2>Stash a cat</h2></div>
+          <button class="close-button" type="button" data-close-modal aria-label="Close capture form">×</button>
+        </div>
+        <div class="capture-layout">
+          <div class="upload-panel">
+            <label class="upload-zone" id="uploadZone">
+              <input id="photoInput" type="file" accept="image/*" capture="environment" required />
+              <span class="camera-glyph" aria-hidden="true">▣</span>
+              <strong>TAKE OR CHOOSE A PHOTO</strong>
+              <small>JPG, PNG or HEIC · processed on this device</small>
+            </label>
+            <div class="canvas-wrap" id="canvasWrap" hidden>
+              <canvas id="pixelCanvas" width="320" height="320" aria-label="Pixelised preview of your cat photo"></canvas>
+              <span>PIXEL PREVIEW</span>
+            </div>
+          </div>
+          <div class="capture-fields">
+            <label><span>CAT NICKNAME <small>OPTIONAL</small></span><input id="nicknameInput" maxlength="24" placeholder="e.g. Kopi" /></label>
+            <label><span>BREED ESTIMATE</span><select id="breedSelect"></select><small id="confidenceText">Add a photo to get a visual suggestion.</small></label>
+            <label><span>GENERAL REGION</span><select id="regionSelect" required></select><small>Only this broad region is stored. Exact location is never requested.</small></label>
+            <label><span>FIELD NOTE <small>OPTIONAL</small></span><textarea id="noteInput" maxlength="120" placeholder="Sleepy, curious, wearing a blue collar…"></textarea></label>
+          </div>
+        </div>
+        <div class="modal-footer"><span id="formStatus" role="status"></span><button class="primary-button" id="stashButton" value="default" type="submit" disabled>STASH THIS CAT →</button></div>
+      </form>
+    </dialog>
+
+    <dialog class="detail-modal" id="detailModal">
+      <article class="detail-card">
+        <button class="close-button detail-close" type="button" data-close-detail aria-label="Close cat details">×</button>
+        <div id="detailContent"></div>
+      </article>
+    </dialog>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
