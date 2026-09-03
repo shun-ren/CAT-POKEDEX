@@ -6,5 +6,8 @@
   "scripts": {
     "build": "node scripts/verify-build.mjs",
     "start": "npx serve build"
+  },
+  "dependencies": {
+    "onnxruntime-web": "1.29.0"
   }
 }

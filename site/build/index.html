@@ -22,6 +22,7 @@
           </span>
         </a>
         <nav class="desktop-nav" aria-label="Main navigation">
+          <a href="#fact">Cat fact</a>
           <a class="active" href="#home">Field log</a>
           <a href="#catalog">Catdex</a>
           <a href="#map">Map</a>
@@ -30,6 +31,16 @@
       </header>
 
       <main>
+        <section class="fact-section" id="fact" aria-labelledby="factTitle">
+          <div class="fact-stamp" aria-hidden="true"><span>CAT</span><strong>FACT</strong><small>DAILY</small></div>
+          <div class="fact-copy">
+            <p class="eyebrow">INTERESTING FACT OF THE DAY</p>
+            <h2 id="factTitle">Today’s cat curiosity</h2>
+            <p id="dailyFact">Cats use their whiskers to sense nearby objects and openings, even in low light.</p>
+          </div>
+          <button class="fact-button" id="nextFactButton" type="button" aria-label="Show another cat fact">ANOTHER FACT <span aria-hidden="true">↻</span></button>
+        </section>
+
         <section class="hero" id="home">
           <div class="hero-copy">
             <p class="eyebrow"><span class="live-dot"></span> FIELD LOG // 02 SEP 2026</p>
@@ -71,16 +82,6 @@
             <div><span>CATDEX COMPLETION</span><strong id="completionLabel">5%</strong></div>
             <div class="progress-track" aria-label="Catdex completion"><span id="completionBar" style="width: 5%"></span></div>
           </div>
-        </section>
-
-        <section class="fact-section" id="fact" aria-labelledby="factTitle">
-          <div class="fact-stamp" aria-hidden="true"><span>CAT</span><strong>FACT</strong><small>DAILY</small></div>
-          <div class="fact-copy">
-            <p class="eyebrow">INTERESTING FACT OF THE DAY</p>
-            <h2 id="factTitle">Today’s cat curiosity</h2>
-            <p id="dailyFact">Cats use their whiskers to sense nearby objects and openings, even in low light.</p>
-          </div>
-          <button class="fact-button" id="nextFactButton" type="button" aria-label="Show another cat fact">ANOTHER FACT <span aria-hidden="true">↻</span></button>
         </section>
 
         <section class="section catalog-section" id="catalog">
@@ -150,7 +151,7 @@
         <div class="capture-layout">
           <div class="upload-panel">
             <label class="upload-zone" id="uploadZone">
-              <input id="photoInput" type="file" accept="image/*" capture="environment" required />
+              <input id="photoInput" type="file" accept="image/*" capture="environment" />
               <span class="camera-glyph" aria-hidden="true">▣</span>
               <strong>TAKE OR CHOOSE A PHOTO</strong>
               <small>JPG, PNG or HEIC · processed on this device</small>
@@ -158,6 +159,7 @@
             <div class="canvas-wrap" id="canvasWrap" hidden>
               <canvas id="pixelCanvas" width="480" height="480" aria-label="Cartoon-art preview of your cat photo"></canvas>
               <span>CATDEX CARTOON</span>
+              <button class="replace-photo" id="replacePhotoButton" type="button">↻ USE ANOTHER PHOTO</button>
             </div>
           </div>
           <div class="capture-fields">
@@ -165,11 +167,20 @@
             <div class="breed-analysis" aria-live="polite">
               <span class="field-label">AUTOMATIC TYPE ANALYSIS</span>
               <input id="breedSelect" type="hidden" value="Domestic Shorthair" />
-              <div class="breed-result">
-                <span class="analysis-icon" aria-hidden="true">◎</span>
-                <div><small>LIKELY TYPE</small><strong id="breedResult">Waiting for a photo</strong></div>
-                <b id="confidenceBadge">—</b>
+              <input id="coatSelect" type="hidden" value="Unknown coat" />
+              <div class="analysis-results">
+                <div class="breed-result coat-result">
+                  <span class="analysis-icon" aria-hidden="true">◈</span>
+                  <div><small>COAT COLOUR + PATTERN</small><strong id="coatResult">Waiting for a photo</strong></div>
+                  <b id="coatConfidenceBadge">—</b>
+                </div>
+                <div class="breed-result">
+                  <span class="analysis-icon" aria-hidden="true">◎</span>
+                  <div><small>LIKELY BREED</small><strong id="breedResult">Waiting for a photo</strong></div>
+                  <b id="confidenceBadge">—</b>
+                </div>
               </div>
+              <div class="combined-type"><small>CATDEX RESULT</small><strong id="combinedResult">Add a clear cat photo to begin</strong></div>
               <small id="confidenceText">No breed knowledge needed. CATDEX will analyse the photo and fill this in for you.</small>
               <div class="candidate-list" id="candidateList" hidden></div>
             </div>
@@ -199,8 +210,8 @@
       </div>
       <div class="chat-suggestions" id="chatSuggestions">
         <button type="button">Why does a cat slow blink?</button>
-        <button type="button">What foods are unsafe?</button>
-        <button type="button">How can I help a stray?</button>
+        <button type="button">What is a tuxedo coat?</button>
+        <button type="button">Tell me about Ragdolls</button>
       </div>
       <form class="chat-form" id="chatForm">
         <label class="sr-only" for="chatInput">Ask Miso a cat question</label>
@@ -212,12 +223,13 @@
 
     <button class="expert-launcher" id="expertLauncher" type="button" aria-label="Ask Miso, the cat expert" aria-expanded="false">
       <span class="laser-dot" aria-hidden="true"></span>
-      <img src="./assets/miso-cat-expert.png" alt="Miso, a friendly illustrated cat expert" />
+      <span class="miso-sprite" role="img" aria-label="Miso, a friendly illustrated cat expert blinking, playing, and stretching"></span>
       <span class="launcher-label">ASK MISO</span>
       <span class="launcher-bubble">Need cat help?</span>
     </button>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="./vendor/ort.min.js" defer></script>
     <script src="./app.js" defer></script>
   </body>
 </html>

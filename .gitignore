@@ -3,3 +3,13 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.log
+site/ml/data/*
+!site/ml/data/.gitkeep
+site/ml/output/
+site/.python-portable/
+site/.python312/
+site/python-*.exe
+site/python-*.zip
+site/python-install*.log
+site/get-pip.py
+__pycache__/

@@ -7,8 +7,14 @@ const required = [
   'build/app.js',
   'build/assets/cat-sprite-atlas.png',
   'build/assets/miso-cat-expert.png',
+  'build/assets/miso-animation-v2.png',
+  'build/assets/cat-fact-lounge-v2.png',
   'build/assets/singapore-regions.png',
-  'build/assets/og.png'
+  'build/assets/og.png',
+  'build/vendor/ort.min.js',
+  'build/vendor/ort-wasm-simd-threaded.wasm',
+  'build/models/cat-breed-resnet18.onnx',
+  'build/models/cat-breed-labels.json'
 ];
 
 await Promise.all(required.map(path => access(path, constants.R_OK)));
@@ -17,7 +23,7 @@ const [html, script] = await Promise.all([
   readFile('build/app.js', 'utf8')
 ]);
 
-for (const marker of ['data-open-capture', 'id="catalog"', 'id="map"', './styles.css', './app.js']) {
+for (const marker of ['data-open-capture', 'id="fact"', 'id="catalog"', 'id="map"', './styles.css', './vendor/ort.min.js', './app.js']) {
   if (!html.includes(marker)) throw new Error(`Missing required app marker: ${marker}`);
 }
 if (!script.includes('processImage') || !script.includes('registerWebMCP')) {

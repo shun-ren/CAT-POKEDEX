@@ -2,15 +2,16 @@
 
 **Spot. Snap. Stash.** CATDEX is a privacy-first, pixel-art field guide for cats spotted around Singapore.
 
-The current version is a functional browser prototype. A user can take or choose a cat photo, turn it into a smooth, outlined CATDEX cartoon portrait, receive an automatic conservative type estimate, select a broad Singapore region, and add the sighting to their collection. The collection records when the cat was captured, shows breed traits, tracks unlocked breeds, and visualises sightings on an intentionally generalised Singapore map.
+The current version is a functional browser prototype. A user can take or choose a cat photo, turn it into a smooth, outlined CATDEX cartoon portrait, receive separate automatic coat and breed estimates, select a broad Singapore region, and add the sighting to their collection. CATDEX combines the two results into labels such as `Ginger tabby · Bengal` while retaining separate confidence and alternatives.
 
 ## What is included
 
 - Camera-friendly photo input (`capture="environment"` on supported mobile browsers)
 - Client-side cartoon rendering with posterised colour and illustrated ink outlines
-- Automatic type analysis with ranked lookalikes and no breed knowledge required
-- A rotating cat fact of the day between the field log and collection
-- Miso, an animated cat-care guide with a side conversation panel
+- A two-stage local analyser: coat-pattern analysis plus an ONNX ResNet18 breed classifier
+- A rotating cat fact of the day over an illustrated, readability-safe cat lounge
+- Miso, an animated cat-care guide with breed and coat knowledge
+- Fresh analysis jobs and an explicit “use another photo” control for repeated uploads
 - Cat detail entries with breed origin, rarity, traits, capture date and field notes
 - Breed and sighting progress counters (`unlocked / 73`)
 - Search and broad-region filtering
@@ -38,13 +39,15 @@ For a production release, use:
 
 ## Breed identification note
 
-Appearance alone cannot reliably prove a cat's pedigree. The offline analyser now auto-fills a conservative type, displays ranked lookalikes, and favours mixed-ancestry `Domestic Shorthair` over rare pedigree claims based only on coat colour. It remains a visual estimate, not a definitive identification. A production classifier still needs a validated cat-breed model, calibrated abstention, and evaluation on Singapore community-cat imagery.
+Appearance alone cannot reliably prove a cat's pedigree. The offline analyser separates coat colour/pattern from breed, then combines the results for display. It distinguishes tuxedo, tabby, calico, tortoiseshell, ginger, black, blue-grey, colour-point, white and bicolour appearances. Breed ranking runs locally through an ONNX ResNet18 trained on the 12 cat breeds in Oxford-IIIT Pet. Production still needs broader training data, calibrated abstention, and evaluation on Singapore community-cat imagery.
+
+The repository includes a local training workflow in [`site/ml`](./site/ml). Add only evidence-backed, consented training images to its train/validation/test folders; run evaluation on the held-out test split; then export a candidate ONNX model. Candidate exports never replace the browser model automatically.
 
 The total of 73 is a configurable starter catalogue. Cat registries recognise different totals, so a production release should choose and cite one registry/version rather than presenting a universal number.
 
 ## Run locally
 
-The app is dependency-free and lives in [`site/build`](./site/build).
+The app is a static browser build under [`site/build`](./site/build). Its ONNX runtime and breed-model weights are vendored locally, so uploaded photos do not need to leave the browser.
 
 ```powershell
 cd site
@@ -63,6 +66,7 @@ CAT-POKEDEX/
    ├─ .openai/hosting.json
    ├─ package.json
    ├─ scripts/verify-build.mjs
+   ├─ ml/                 # local data, training, evaluation and candidate export workflow
    └─ build/
       ├─ index.html
       ├─ styles.css
