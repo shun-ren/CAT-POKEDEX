@@ -73,6 +73,16 @@
           </div>
         </section>
 
+        <section class="fact-section" id="fact" aria-labelledby="factTitle">
+          <div class="fact-stamp" aria-hidden="true"><span>CAT</span><strong>FACT</strong><small>DAILY</small></div>
+          <div class="fact-copy">
+            <p class="eyebrow">INTERESTING FACT OF THE DAY</p>
+            <h2 id="factTitle">Today’s cat curiosity</h2>
+            <p id="dailyFact">Cats use their whiskers to sense nearby objects and openings, even in low light.</p>
+          </div>
+          <button class="fact-button" id="nextFactButton" type="button" aria-label="Show another cat fact">ANOTHER FACT <span aria-hidden="true">↻</span></button>
+        </section>
+
         <section class="section catalog-section" id="catalog">
           <div class="section-heading">
             <div>
@@ -146,13 +156,23 @@
               <small>JPG, PNG or HEIC · processed on this device</small>
             </label>
             <div class="canvas-wrap" id="canvasWrap" hidden>
-              <canvas id="pixelCanvas" width="320" height="320" aria-label="Pixelised preview of your cat photo"></canvas>
-              <span>PIXEL PREVIEW</span>
+              <canvas id="pixelCanvas" width="480" height="480" aria-label="Cartoon-art preview of your cat photo"></canvas>
+              <span>CATDEX CARTOON</span>
             </div>
           </div>
           <div class="capture-fields">
             <label><span>CAT NICKNAME <small>OPTIONAL</small></span><input id="nicknameInput" maxlength="24" placeholder="e.g. Kopi" /></label>
-            <label><span>BREED ESTIMATE</span><select id="breedSelect"></select><small id="confidenceText">Add a photo to get a visual suggestion.</small></label>
+            <div class="breed-analysis" aria-live="polite">
+              <span class="field-label">AUTOMATIC TYPE ANALYSIS</span>
+              <input id="breedSelect" type="hidden" value="Domestic Shorthair" />
+              <div class="breed-result">
+                <span class="analysis-icon" aria-hidden="true">◎</span>
+                <div><small>LIKELY TYPE</small><strong id="breedResult">Waiting for a photo</strong></div>
+                <b id="confidenceBadge">—</b>
+              </div>
+              <small id="confidenceText">No breed knowledge needed. CATDEX will analyse the photo and fill this in for you.</small>
+              <div class="candidate-list" id="candidateList" hidden></div>
+            </div>
             <label><span>GENERAL REGION</span><select id="regionSelect" required></select><small>Only this broad region is stored. Exact location is never requested.</small></label>
             <label><span>FIELD NOTE <small>OPTIONAL</small></span><textarea id="noteInput" maxlength="120" placeholder="Sleepy, curious, wearing a blue collar…"></textarea></label>
           </div>
@@ -167,6 +187,35 @@
         <div id="detailContent"></div>
       </article>
     </dialog>
+
+    <aside class="expert-chat" id="expertChat" aria-label="Miso the cat expert" aria-hidden="true">
+      <div class="chat-heading">
+        <div class="chat-avatar"><img src="./assets/miso-cat-expert.png" alt="" /></div>
+        <div><strong>MISO</strong><span>CAT EXPERT · ONLINE</span></div>
+        <button id="closeChat" type="button" aria-label="Close cat expert chat">×</button>
+      </div>
+      <div class="chat-messages" id="chatMessages" role="log" aria-live="polite">
+        <div class="chat-message bot">Mrow! I’m Miso. Ask me about cat behaviour, care, food, breeds, or helping a community cat.</div>
+      </div>
+      <div class="chat-suggestions" id="chatSuggestions">
+        <button type="button">Why does a cat slow blink?</button>
+        <button type="button">What foods are unsafe?</button>
+        <button type="button">How can I help a stray?</button>
+      </div>
+      <form class="chat-form" id="chatForm">
+        <label class="sr-only" for="chatInput">Ask Miso a cat question</label>
+        <input id="chatInput" maxlength="240" autocomplete="off" placeholder="Ask Miso anything about cats…" />
+        <button type="submit" aria-label="Send question">↑</button>
+      </form>
+      <p class="chat-note">General guidance only · urgent health concerns need a vet.</p>
+    </aside>
+
+    <button class="expert-launcher" id="expertLauncher" type="button" aria-label="Ask Miso, the cat expert" aria-expanded="false">
+      <span class="laser-dot" aria-hidden="true"></span>
+      <img src="./assets/miso-cat-expert.png" alt="Miso, a friendly illustrated cat expert" />
+      <span class="launcher-label">ASK MISO</span>
+      <span class="launcher-bubble">Need cat help?</span>
+    </button>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="./app.js" defer></script>

@@ -10,8 +10,8 @@ CATDEX is a personal, game-like field guide for cats spotted around Singapore. T
 
 1. The user sees a cat.
 2. They take or choose a photo.
-3. CATDEX converts the photo into a pixel-art portrait.
-4. CATDEX suggests a likely breed or type and asks the user to review it.
+3. CATDEX converts the photo into a smooth posterised cartoon portrait with illustrated outlines.
+4. CATDEX automatically fills a conservative likely type and shows lower-ranked lookalikes.
 5. The user chooses one broad Singapore region and optionally adds a nickname or field note.
 6. The entry is stashed in a searchable collection and contributes to breed, sighting and regional progress.
 
@@ -48,7 +48,7 @@ The app is a dependency-free static web prototype under `site/build`.
 | --- | --- |
 | `site/build/index.html` | Page structure, collection, map, capture dialog and detail dialog |
 | `site/build/styles.css` | Responsive visual system, pixel-game styling and sprite cropping |
-| `site/build/app.js` | State, rendering, image pixelisation, visual breed heuristic, filtering and WebMCP registration |
+| `site/build/app.js` | State, rendering, cartoon treatment, conservative type analysis, facts, chat, filtering and WebMCP registration |
 | `site/build/assets/cat-sprite-atlas.png` | Eight original pixel-art demonstration cats in a 4 × 2 atlas |
 | `site/build/assets/singapore-regions.png` | Original simplified Singapore region map |
 | `site/build/assets/og.png` | Social preview card |
@@ -85,7 +85,11 @@ This storage model is only for product validation. It is limited by browser quot
 
 `site/build/app.js` contains a small `BREEDS` object with traits, origin, rarity and a short fact. The progress denominator is a configurable `TOTAL_BREEDS = 73`. Registry totals differ, so production must choose and cite a specific registry and catalogue version.
 
-The current offline breed suggestion is a simple dominant-colour heuristic. It is useful only to demonstrate the review flow. It is not machine learning and must be replaced before the product makes meaningful breed claims.
+The current offline analyser uses several colour, contrast and spatial features and is intentionally biased toward `Domestic Shorthair` rather than rare-pedigree claims based on coat colour. It auto-fills the result and shows ranked lookalikes. It is still not machine learning and must be replaced with a calibrated, evaluated classifier before the product makes meaningful breed claims.
+
+### Daily facts and Miso
+
+The field log now includes a date-seeded cat fact with an optional “another fact” control. Miso is a generated cat-expert mascot with a keyboard-accessible side chat. Its answers come from a small offline intent-based care library; it does not call an LLM and must not be represented as veterinary diagnosis.
 
 ### Map
 
@@ -104,11 +108,12 @@ The current environment did not provide a supported in-app browser, so these reg
 
 The interface uses warm cream, deep forest green, lime, coral, gold and lavender. Borders and hard offset shadows create a handheld field-guide feel. Generated art uses crisp 16-bit pixels.
 
-The three raster assets were generated with the built-in image-generation workflow from briefs for:
+The raster assets were generated with the built-in image-generation workflow from briefs for:
 
 - an original eight-cat 4 × 2 sprite atlas;
 - an abstract, privacy-safe Singapore regional map; and
 - a `CATDEX — Spot. Snap. Stash.` social card.
+- Miso, the transparent cat-expert chat mascot.
 
 All briefs explicitly excluded copyrighted characters, logos and copied UI.
 
@@ -135,7 +140,7 @@ Browser visual QA and WebMCP contract execution were not available in the origin
 ## 7. Known gaps
 
 1. Storage is device-local rather than account-backed.
-2. The breed suggestion is a colour heuristic, not a trained classifier.
+2. The automatic type analyser is conservative but remains a hand-built visual heuristic, not a trained and calibrated classifier.
 3. There is no deletion, editing, export or import flow.
 4. Original photos are not retained separately from pixel portraits.
 5. There is no explicit EXIF stripping step because the canvas output naturally creates new image bytes; production should still verify this server-side.

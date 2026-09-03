@@ -2,13 +2,15 @@
 
 **Spot. Snap. Stash.** CATDEX is a privacy-first, pixel-art field guide for cats spotted around Singapore.
 
-The current version is a functional browser prototype. A user can take or choose a cat photo, turn it into a deliberately pixelised portrait, review a visual breed suggestion, select a broad Singapore region, and add the sighting to their collection. The collection records when the cat was captured, shows breed traits, tracks unlocked breeds, and visualises sightings on an intentionally generalised Singapore map.
+The current version is a functional browser prototype. A user can take or choose a cat photo, turn it into a smooth, outlined CATDEX cartoon portrait, receive an automatic conservative type estimate, select a broad Singapore region, and add the sighting to their collection. The collection records when the cat was captured, shows breed traits, tracks unlocked breeds, and visualises sightings on an intentionally generalised Singapore map.
 
 ## What is included
 
 - Camera-friendly photo input (`capture="environment"` on supported mobile browsers)
-- Real client-side pixelisation using an HTML canvas
-- A reviewable breed suggestion with confidence text and manual correction
+- Client-side cartoon rendering with posterised colour and illustrated ink outlines
+- Automatic type analysis with ranked lookalikes and no breed knowledge required
+- A rotating cat fact of the day between the field log and collection
+- Miso, an animated cat-care guide with a side conversation panel
 - Cat detail entries with breed origin, rarity, traits, capture date and field notes
 - Breed and sighting progress counters (`unlocked / 73`)
 - Search and broad-region filtering
@@ -23,7 +25,7 @@ The current version is a functional browser prototype. A user can take or choose
 
 CATDEX never requests or stores GPS coordinates, postal codes, street names or exact pins. A sighting stores only one manually chosen broad region. This reduces the risk of exposing community-cat locations to people who may cause harm.
 
-The prototype stores entries in the current browser using `localStorage`. Uploaded photos are reduced to a 320 × 320 pixel-art WebP before storage. This is useful for product validation, but it is not the final multi-device architecture.
+The prototype stores entries in the current browser using `localStorage`. Uploaded photos are redrawn as a 480 × 480 cartoon-style WebP before storage. This is useful for product validation, but it is not the final multi-device architecture.
 
 For a production release, use:
 
@@ -36,7 +38,7 @@ For a production release, use:
 
 ## Breed identification note
 
-Appearance alone cannot reliably prove a cat's pedigree. The current offline suggestion is intentionally lightweight and should be treated as a visual estimate, not a definitive identification. The user always reviews and can correct the suggestion before saving. A production classifier should return ranked candidates and preserve an `Unknown / mixed ancestry` option.
+Appearance alone cannot reliably prove a cat's pedigree. The offline analyser now auto-fills a conservative type, displays ranked lookalikes, and favours mixed-ancestry `Domestic Shorthair` over rare pedigree claims based only on coat colour. It remains a visual estimate, not a definitive identification. A production classifier still needs a validated cat-breed model, calibrated abstention, and evaluation on Singapore community-cat imagery.
 
 The total of 73 is a configurable starter catalogue. Cat registries recognise different totals, so a production release should choose and cite one registry/version rather than presenting a universal number.
 

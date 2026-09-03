@@ -6,6 +6,7 @@ const required = [
   'build/styles.css',
   'build/app.js',
   'build/assets/cat-sprite-atlas.png',
+  'build/assets/miso-cat-expert.png',
   'build/assets/singapore-regions.png',
   'build/assets/og.png'
 ];

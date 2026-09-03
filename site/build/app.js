@@ -1,6 +1,18 @@
 const TOTAL_BREEDS = 73;
 const STORAGE_KEY = 'catdex.sightings.v1';
 const REGIONS = ['Central', 'East', 'North', 'North-East', 'West', 'Southern Islands'];
+const CAT_FACTS = [
+  'Cats use their whiskers to sense nearby objects and openings, even in low light. Whiskers are sensitive tools, so they should never be trimmed.',
+  'A slow blink is often a relaxed, friendly signal. Try softly closing your eyes and looking slightly away instead of staring.',
+  'A cat’s nose print has a unique pattern of tiny ridges, much like a human fingerprint.',
+  'Cats can rotate each ear independently, helping them pinpoint the source of very quiet sounds.',
+  'Purring is not only a sign of happiness. Cats may also purr when stressed, frightened, or in pain, so context matters.',
+  'Most adult cats are lactose intolerant. Fresh water is a much safer everyday drink than cow’s milk.',
+  'A cat’s tail helps with balance, but it is also a mood signal. A gently upright tail often means a friendly greeting.',
+  'Cats are crepuscular: many naturally become most active around dawn and dusk rather than in the middle of the night.',
+  'Kneading is a kittenhood behaviour that many cats keep as adults when they feel comfortable and secure.',
+  'Cats have an extra scent-detecting organ in the roof of the mouth. The funny open-mouth “flehmen” face helps them use it.'
+];
 
 const BREEDS = {
   'Domestic Shorthair': {
@@ -87,6 +99,16 @@ const els = {
   toast: document.querySelector('#toast'), detailContent: document.querySelector('#detailContent'),
   sound: document.querySelector('#soundButton')
 };
+Object.assign(els, {
+  breedResult: document.querySelector('#breedResult'),
+  confidenceBadge: document.querySelector('#confidenceBadge'),
+  candidateList: document.querySelector('#candidateList'),
+  dailyFact: document.querySelector('#dailyFact'),
+  expertChat: document.querySelector('#expertChat'),
+  expertLauncher: document.querySelector('#expertLauncher'),
+  chatMessages: document.querySelector('#chatMessages'),
+  chatInput: document.querySelector('#chatInput')
+});
 
 let soundOn = true;
 let processedPhoto = '';
@@ -215,7 +237,12 @@ function resetCapture() {
   els.uploadZone.hidden = false;
   els.canvasWrap.hidden = true;
   els.stashButton.disabled = true;
-  els.confidence.textContent = 'Add a photo to get a visual suggestion.';
+  els.breed.value = 'Domestic Shorthair';
+  els.breedResult.textContent = 'Waiting for a photo';
+  els.confidenceBadge.textContent = '—';
+  els.candidateList.hidden = true;
+  els.candidateList.innerHTML = '';
+  els.confidence.textContent = 'No breed knowledge needed. CATDEX will analyse the photo and fill this in for you.';
   els.status.textContent = '';
   els.region.value = 'Central';
 }
@@ -237,61 +264,116 @@ async function processImage(file) {
     els.status.textContent = 'That photo is over 15 MB. Try a smaller image.';
     return;
   }
-  els.status.textContent = 'Pixelising photo…';
+  els.status.textContent = 'Drawing your CATDEX cartoon…';
   const image = await createImageBitmap(file);
   const canvas = els.canvas;
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   const side = Math.min(image.width, image.height);
   const sx = (image.width - side) / 2;
   const sy = (image.height - side) / 2;
-  const mini = document.createElement('canvas');
-  mini.width = 40; mini.height = 40;
-  const miniCtx = mini.getContext('2d', { willReadFrequently: true });
-  miniCtx.drawImage(image, sx, sy, side, side, 0, 0, 40, 40);
-  quantize(miniCtx, 40, 40);
-  ctx.clearRect(0, 0, 320, 320);
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(mini, 0, 0, 320, 320);
-  processedPhoto = canvas.toDataURL('image/webp', .76);
-  const suggestion = suggestBreed(miniCtx.getImageData(0, 0, 40, 40).data);
+  const work = document.createElement('canvas');
+  work.width = 192; work.height = 192;
+  const workCtx = work.getContext('2d', { willReadFrequently: true });
+  workCtx.imageSmoothingEnabled = true;
+  workCtx.filter = 'saturate(1.16) contrast(1.08)';
+  workCtx.drawImage(image, sx, sy, side, side, 0, 0, work.width, work.height);
+  workCtx.filter = 'none';
+  const sourcePixels = workCtx.getImageData(0, 0, work.width, work.height);
+  const suggestion = suggestBreed(sourcePixels.data, work.width, work.height);
+  cartoonise(workCtx, work.width, work.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(work, 0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#123b2a';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+  processedPhoto = canvas.toDataURL('image/webp', .88);
   els.breed.value = suggestion.breed;
   suggestionConfidence = suggestion.confidence;
-  els.confidence.textContent = `${suggestion.confidence}% visual match · please review before stashing.`;
+  els.breedResult.textContent = suggestion.breed;
+  els.confidenceBadge.textContent = `${suggestion.confidence}%`;
+  els.confidence.textContent = suggestion.reason;
+  els.candidateList.innerHTML = suggestion.candidates.map(item => `<span>${escapeHtml(item.name)} · ${item.score}%</span>`).join('');
+  els.candidateList.hidden = false;
   els.uploadZone.hidden = true;
   els.canvasWrap.hidden = false;
   els.stashButton.disabled = false;
-  els.status.textContent = 'Pixel portrait ready.';
+  els.status.textContent = 'Cartoon portrait and type analysis ready.';
   playTone(720, .08);
   image.close?.();
 }
 
-function quantize(ctx, width, height) {
+function cartoonise(ctx, width, height) {
   const imageData = ctx.getImageData(0, 0, width, height);
   const data = imageData.data;
+  const grey = new Float32Array(width * height);
+  for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+    grey[p] = data[i] * .299 + data[i + 1] * .587 + data[i + 2] * .114;
+  }
   for (let i = 0; i < data.length; i += 4) {
-    data[i] = Math.round(data[i] / 32) * 32;
-    data[i + 1] = Math.round(data[i + 1] / 32) * 32;
-    data[i + 2] = Math.round(data[i + 2] / 32) * 32;
+    data[i] = Math.min(255, Math.round(data[i] / 40) * 40);
+    data[i + 1] = Math.min(255, Math.round(data[i + 1] / 40) * 40);
+    data[i + 2] = Math.min(255, Math.round(data[i + 2] / 40) * 40);
+  }
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      const p = y * width + x;
+      const gx = -grey[p-width-1] + grey[p-width+1] - 2*grey[p-1] + 2*grey[p+1] - grey[p+width-1] + grey[p+width+1];
+      const gy = -grey[p-width-1] - 2*grey[p-width] - grey[p-width+1] + grey[p+width-1] + 2*grey[p+width] + grey[p+width+1];
+      if (Math.hypot(gx, gy) > 150) {
+        const i = p * 4;
+        data[i] = Math.round(data[i] * .22 + 18 * .78);
+        data[i + 1] = Math.round(data[i + 1] * .22 + 59 * .78);
+        data[i + 2] = Math.round(data[i + 2] * .22 + 42 * .78);
+      }
+    }
   }
   ctx.putImageData(imageData, 0, 0);
 }
 
-function suggestBreed(data) {
-  let r = 0, g = 0, b = 0, count = 0, dark = 0, light = 0, warm = 0;
+function suggestBreed(data, width, height) {
+  let r = 0, g = 0, b = 0, count = 0, dark = 0, light = 0, warm = 0, grey = 0, colourful = 0;
+  let centreDark = 0, centreCount = 0, edgeLight = 0, edgeCount = 0;
   for (let i = 0; i < data.length; i += 16) {
+    const pixel = i / 4;
+    const x = pixel % width;
+    const y = Math.floor(pixel / width);
     r += data[i]; g += data[i + 1]; b += data[i + 2]; count++;
     const value = (data[i] + data[i + 1] + data[i + 2]) / 3;
-    if (value < 70) dark++; if (value > 205) light++; if (data[i] > data[i + 2] * 1.28) warm++;
+    const spread = Math.max(data[i], data[i+1], data[i+2]) - Math.min(data[i], data[i+1], data[i+2]);
+    if (value < 72) dark++;
+    if (value > 200) light++;
+    if (data[i] > data[i + 2] * 1.28 && data[i] > data[i+1] * 1.05) warm++;
+    if (spread < 22) grey++;
+    if (spread > 70) colourful++;
+    const inCentre = x > width*.25 && x < width*.75 && y > height*.18 && y < height*.72;
+    if (inCentre) { centreCount++; if (value < 88) centreDark++; }
+    else { edgeCount++; if (value > 175) edgeLight++; }
   }
   r /= count; g /= count; b /= count;
   let breed = 'Domestic Shorthair';
-  if (dark / count > .48) breed = 'Bombay';
-  else if (light / count > .55 && b > r * .9) breed = 'Turkish Angora';
-  else if (b > r * 1.05 && Math.abs(g - b) < 30) breed = 'Russian Blue';
-  else if (warm / count > .55 && r > 125) breed = 'Abyssinian';
-  else if (Math.max(r,g,b) - Math.min(r,g,b) < 24 && r < 155) breed = 'American Shorthair';
-  const confidence = 61 + Math.abs(Math.round((r - b) / 14)) % 17;
-  return { breed, confidence };
+  let confidence = 76;
+  let reason = 'Most non-pedigree and community cats are mixed-ancestry domestic cats, so CATDEX uses that safer match unless the photo shows a strong distinctive pattern.';
+  let candidates = [{ name: 'Mixed ancestry', score: 71 }, { name: 'American Shorthair lookalike', score: 34 }];
+  const ratios = { dark: dark/count, light: light/count, warm: warm/count, grey: grey/count, colourful: colourful/count, centreDark: centreDark/Math.max(1,centreCount), edgeLight: edgeLight/Math.max(1,edgeCount) };
+  if (ratios.centreDark > .30 && ratios.edgeLight > .42 && ratios.light > .23) {
+    breed = 'Siamese'; confidence = 68;
+    reason = 'Colour-point contrast suggests a Siamese-type cat. This is an appearance estimate, not proof of pedigree.';
+    candidates = [{ name: 'Domestic colourpoint', score: 64 }, { name: 'Ragdoll lookalike', score: 43 }];
+  } else if (ratios.grey > .58 && ratios.dark > .10 && r < 165 && Math.abs(r-g) < 18) {
+    confidence = 79;
+    reason = 'The coat appears blue-grey, but that colour occurs commonly in mixed cats. Russian Blue is kept as a lower-ranked lookalike.';
+    candidates = [{ name: 'Russian Blue lookalike', score: 48 }, { name: 'British Shorthair lookalike', score: 35 }];
+  } else if (ratios.dark > .53) {
+    confidence = 82;
+    reason = 'The coat appears mostly black. Black colouring alone does not make a cat a Bombay, so CATDEX favours the common mixed type.';
+    candidates = [{ name: 'Mixed ancestry', score: 77 }, { name: 'Bombay lookalike', score: 39 }];
+  } else if (ratios.warm > .38 && ratios.colourful > .44) {
+    confidence = 77;
+    reason = 'A warm ginger, tortoiseshell, or tabby coat is visible. These are coat patterns rather than breeds, so the domestic type is the reliable estimate.';
+    candidates = [{ name: 'Abyssinian lookalike', score: 35 }, { name: 'Bengal lookalike', score: 28 }];
+  }
+  return { breed, confidence, reason, candidates };
 }
 
 function submitCapture(event) {
@@ -340,9 +422,61 @@ function playTone(frequency, duration) {
 }
 
 function populateSelects() {
-  els.breed.innerHTML = Object.keys(BREEDS).sort().map(name => `<option>${escapeHtml(name)}</option>`).join('');
   els.region.innerHTML = REGIONS.map(region => `<option>${escapeHtml(region)}</option>`).join('');
   els.regionFilter.insertAdjacentHTML('beforeend', REGIONS.map(region => `<option>${escapeHtml(region)}</option>`).join(''));
+}
+
+function showDailyFact(offset = 0) {
+  const day = Math.floor(Date.now() / 86400000);
+  els.dailyFact.textContent = CAT_FACTS[(day + offset) % CAT_FACTS.length];
+}
+
+function catExpertAnswer(question) {
+  const q = question.toLowerCase();
+  if (/not breathing|seizure|collapsed|bleeding|poison|hit by|emergency/.test(q)) return 'That may be an emergency. Keep the cat quiet and contact an emergency veterinarian now. Do not give human medicine, food, or water unless the vet tells you to.';
+  if (/food|eat|toxic|unsafe|chocolate|onion|garlic|milk/.test(q)) return 'Keep chocolate, onions, garlic, grapes or raisins, alcohol, caffeine, xylitol, and cooked bones away from cats. Many adults cannot digest milk. A complete cat food and fresh water are the safest basics.';
+  if (/slow blink|blink/.test(q)) return 'A slow blink usually means the cat feels calm and non-threatening. You can return it gently: soften your gaze, blink slowly, then look a little away.';
+  if (/stray|community|feral|outside cat/.test(q)) return 'Approach slowly and let the cat choose distance. Offer water, observe from a safe spot, and contact a local community-cat caregiver or rescue if it is injured. Avoid sharing an exact location publicly.';
+  if (/breed|pedigree|what type/.test(q)) return 'Looks can suggest a type, but they cannot prove pedigree. Most cats without papers are mixed-ancestry domestic shorthairs or longhairs. Calico, tabby, and tuxedo describe coat patterns, not breeds.';
+  if (/purr|purring/.test(q)) return 'Cats often purr when content, but also when stressed, unwell, or self-soothing. Read the whole cat: posture, appetite, breathing, hiding, and recent behaviour changes matter.';
+  if (/tail|ears|body language|angry|scared/.test(q)) return 'A loose body, neutral ears, and softly upright tail suggest comfort. Flattened ears, a lashing tail, crouching, growling, or very wide pupils mean “give me space.” Never force contact.';
+  if (/litter|toilet|pee|urine/.test(q)) return 'Use one litter box per cat plus one extra, in quiet separate places, and scoop daily. Sudden straining or repeated trips with little urine can be urgent—especially in male cats—so contact a vet promptly.';
+  if (/scratch|bit|bite/.test(q)) return 'Wash a bite or scratch well with soap and running water. Cat bites can infect quickly; seek medical advice for deep wounds, swelling, redness, fever, or bites to the hand or face.';
+  if (/groom|brush|fur|hairball/.test(q)) return 'Brush gently in the direction of the coat and stop if the skin twitches or the tail lashes. Frequent vomiting, bald patches, skin-close mats, or excessive grooming deserve veterinary advice.';
+  if (/kitten|baby cat/.test(q)) return 'Kittens need warmth, kitten-formulated food, vaccination and parasite guidance from a vet, and careful socialisation. Very young orphaned kittens need specialist feeding—never cow’s milk.';
+  if (/hello|hi|hey|miso/.test(q)) return 'Mrow hello! Ask me about behaviour, feeding, grooming, breeds, kittens, litter boxes, or how to help a community cat.';
+  return 'I can give general cat guidance, but I do not want to guess. Tell me the cat’s age, main sign or behaviour, how long it has been happening, and whether eating, drinking, breathing, and toileting are normal.';
+}
+
+function addChatMessage(text, who) {
+  const message = document.createElement('div');
+  message.className = `chat-message ${who}`;
+  message.textContent = text;
+  els.chatMessages.append(message);
+  els.chatMessages.scrollTop = els.chatMessages.scrollHeight;
+}
+
+function askMiso(question) {
+  const clean = question.trim();
+  if (!clean) return;
+  addChatMessage(clean, 'user');
+  window.setTimeout(() => addChatMessage(catExpertAnswer(clean), 'bot'), 260);
+}
+
+function openChat() {
+  els.expertChat.classList.add('open');
+  els.expertChat.setAttribute('aria-hidden', 'false');
+  els.expertLauncher.setAttribute('aria-expanded', 'true');
+  els.expertLauncher.hidden = true;
+  window.setTimeout(() => els.chatInput.focus(), 180);
+}
+
+function closeChat() {
+  els.expertChat.classList.remove('open');
+  els.expertChat.setAttribute('aria-hidden', 'true');
+  els.expertLauncher.hidden = false;
+  els.expertLauncher.setAttribute('aria-expanded', 'false');
+  els.expertLauncher.focus();
 }
 
 function registerWebMCP() {
@@ -380,6 +514,18 @@ els.form.addEventListener('submit', submitCapture);
 els.search.addEventListener('input', renderCatalog);
 els.regionFilter.addEventListener('change', renderCatalog);
 els.sound.addEventListener('click', () => { soundOn = !soundOn; els.sound.textContent = soundOn ? 'SFX ON' : 'SFX OFF'; els.sound.setAttribute('aria-pressed', String(soundOn)); if (soundOn) playTone(500,.05); });
+let factOffset = 0;
+document.querySelector('#nextFactButton').addEventListener('click', () => showDailyFact(++factOffset));
+els.expertLauncher.addEventListener('click', openChat);
+document.querySelector('#closeChat').addEventListener('click', closeChat);
+document.querySelector('#chatForm').addEventListener('submit', event => {
+  event.preventDefault();
+  askMiso(els.chatInput.value);
+  els.chatInput.value = '';
+});
+document.querySelector('#chatSuggestions').addEventListener('click', event => {
+  if (event.target.matches('button')) askMiso(event.target.textContent);
+});
 
 const sections = [...document.querySelectorAll('main > section[id]')];
 const navLinks = [...document.querySelectorAll('.desktop-nav a, .mobile-nav a')];
@@ -389,5 +535,6 @@ const observer = new IntersectionObserver(entries => entries.forEach(entry => {
 sections.forEach(section => observer.observe(section));
 
 populateSelects();
+showDailyFact();
 renderAll();
 registerWebMCP();
