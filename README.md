@@ -41,7 +41,7 @@ For a production release, use:
 
 Appearance alone cannot reliably prove a cat's pedigree. The offline analyser separates coat colour/pattern from breed, then combines the results for display. It distinguishes tuxedo, tabby, calico, tortoiseshell, ginger, black, blue-grey, colour-point, white and bicolour appearances. Breed ranking runs locally through an ONNX ResNet18 trained on the 12 cat breeds in Oxford-IIIT Pet. Production still needs broader training data, calibrated abstention, and evaluation on Singapore community-cat imagery.
 
-The repository includes a local training workflow in [`site/ml`](./site/ml). Add only evidence-backed, consented training images to its train/validation/test folders; run evaluation on the held-out test split; then export a candidate ONNX model. Candidate exports never replace the browser model automatically.
+The repository includes a local training workflow in [`site/ml`](./site/ml). The exact prepared train/validation/test split is backed up as two Git LFS archives with checksums and restore instructions under [`site/ml/data-archives`](./site/ml/data-archives). Add only evidence-backed, consented training images to its train/validation/test folders; run evaluation on the held-out test split; then export a candidate ONNX model. Candidate exports never replace the browser model automatically.
 
 The total of 73 is a configurable starter catalogue. Cat registries recognise different totals, so a production release should choose and cite one registry/version rather than presenting a universal number.
 

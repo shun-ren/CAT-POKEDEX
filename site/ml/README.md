@@ -39,6 +39,21 @@ The preparation script maps pattern folders into `coats/`, maps the remaining su
 
 `cats.csv` contains the original Petfinder listing metadata and image URLs. Its `breed` field explains the source folders, while its `coat` field is mostly hair length (`Short`, `Medium`, or `Long`) rather than colour pattern. The preparation script uses the numeric ID already embedded in each filename to keep multiple photos of one listing together. Keep the CSV for provenance and future audits; the current classifier does not read it during training.
 
+### Restore the prepared split from GitHub
+
+The repository stores the exact prepared split as two Git LFS archives under
+`ml/data-archives/`. After cloning on another computer, run from `site/`:
+
+```powershell
+git lfs pull
+tar -xf ml/data-archives/breeds.tar -C ml/data
+tar -xf ml/data-archives/coats.tar -C ml/data
+```
+
+Check the archive hashes against `ml/data-archives/SHA256SUMS.txt`. The extracted
+image folders remain ignored by Git. See `ml/data-archives/README.md` for counts,
+provenance, licensing information and verification commands.
+
 ## 2. Train and evaluate before replacing the website model
 
 From `site/`:
@@ -46,13 +61,16 @@ From `site/`:
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r ml/requirements.txt
+python -m pip install --upgrade pip
+python -m pip install -r ml/requirements.txt
 python ml/train.py --data ml/data/breeds --epochs 12 --output ml/output/breed
 python ml/evaluate.py --data ml/data/breeds --checkpoint ml/output/breed/best.pt --output ml/output/breed
 
 python ml/train.py --data ml/data/coats --epochs 12 --output ml/output/coat
 python ml/evaluate.py --data ml/data/coats --checkpoint ml/output/coat/best.pt --output ml/output/coat
 ```
+
+`requirements.txt` contains exact versions tested together on Python 3.12.10. Run `python -m pip check` after installation. The current local environment uses CPU-only PyTorch; use a CUDA-capable environment for practical full-dataset fine-tuning.
 
 `train.py` is generic: it trains whichever label folders you pass in, so the same script serves both models. It saves candidate checkpoints only under `ml/output/`. `evaluate.py` reports accuracy, macro F1, per-label recall, and a confusion-matrix image on the untouched `test/` split. Check the Ragdoll and `Black tuxedo` rows specifically: high overall accuracy can still hide weak individual labels.
 
@@ -67,6 +85,6 @@ python ml/export_for_catdex.py --checkpoint ml/output/breed/best.pt --labels ml/
 python ml/export_for_catdex.py --checkpoint ml/output/coat/best.pt --labels ml/output/coat/labels.json --output ml/output/coat/cat-coat-candidate.onnx
 ```
 
-These commands write candidate ONNX files; they do **not** touch the local site. Review the two test reports before copying them into `build/models/`. The existing website currently runs the breed ONNX model and uses a provisional local coat heuristic. The next integration step, after a coat candidate passes evaluation, is to load `cat-coat-candidate.onnx` in `app.js` alongside the breed model and remove that heuristic.
+These commands write candidate ONNX files and matching `cat-breed-labels.json` or `cat-coat-labels.json` sidecars; they do **not** touch the local site. Export also checks the label order, validates the ONNX graph and runs a CPU inference smoke test. Review the two test reports before copying candidates into `build/models/`. The existing website currently runs the breed ONNX model and uses a provisional local coat heuristic. The next integration step, after a coat candidate passes evaluation, is to load `cat-coat-candidate.onnx` in `app.js` alongside the breed model and remove that heuristic.
 
 Recommended release gate: no data leakage, macro F1 at least 0.80, and per-breed recall at least 0.75 for every breed shown to users. Below that, show “unable to identify reliably” rather than an authoritative breed name.

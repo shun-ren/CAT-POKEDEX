@@ -1,13 +1,12 @@
-.local-backups/
 node_modules/
 .DS_Store
 Thumbs.db
 *.log
 site/ml/data/*
 !site/ml/data/.gitkeep
+!site/ml/data/preparation-report.json
 site/ml/output/
-site/.python-portable/
-site/.python312/
+site/.venv/
 site/python-*.exe
 site/python-*.zip
 site/python-install*.log

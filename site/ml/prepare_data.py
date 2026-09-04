@@ -76,7 +76,8 @@ def capped_groups(groups, max_images):
     for key, paths in groups:
         if selected and total + len(paths) > max_images:
             continue
-        selected.append((key, paths)); total += len(paths)
+        selected.append((key, paths))
+        total += len(paths)
         if total >= max_images:
             break
     return selected
@@ -109,7 +110,8 @@ def collect(source, verify):
             if not image.is_file() or image.suffix.lower() not in IMAGE_SUFFIXES:
                 continue
             if verify and not valid_image(image):
-                rejected.append(str(image)); continue
+                rejected.append(str(image))
+                continue
             group = animal_id(image)
             if source_label in COAT_CLASSES:
                 coat_groups[COAT_CLASSES[source_label]][group].append(image)
@@ -140,8 +142,10 @@ def materialise(task, groups_by_label, destination, minimum, maximum, seed):
                     if not target.exists():
                         methods[link_or_copy(source, target)] += 1
         report[label] = {
-            'status': 'included', 'available': image_count,
-            'selected': sum(split_counts.values()), 'splits': split_counts,
+            'status': 'included',
+            'available': image_count,
+            'selected': sum(split_counts.values()),
+            'splits': split_counts,
             'storage': dict(methods),
         }
     return report

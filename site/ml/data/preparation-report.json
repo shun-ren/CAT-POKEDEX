@@ -1,0 +1,695 @@
+{
+  "settings": {
+    "source": "ml\\data\\original_dataset",
+    "destination": "ml\\data",
+    "min_images": 100,
+    "max_images": 2500,
+    "seed": 20260903,
+    "skip_image_validation": true
+  },
+  "breeds": {
+    "Abyssinian": {
+      "status": "included",
+      "available": 220,
+      "selected": 220,
+      "splits": {
+        "train": 154,
+        "val": 33,
+        "test": 33
+      },
+      "storage": {
+        "hardlink": 220
+      }
+    },
+    "American Bobtail": {
+      "status": "included",
+      "available": 952,
+      "selected": 952,
+      "splits": {
+        "train": 666,
+        "val": 143,
+        "test": 143
+      },
+      "storage": {
+        "hardlink": 952
+      }
+    },
+    "American Curl": {
+      "status": "included",
+      "available": 139,
+      "selected": 139,
+      "splits": {
+        "train": 97,
+        "val": 21,
+        "test": 21
+      },
+      "storage": {
+        "hardlink": 139
+      }
+    },
+    "American Shorthair": {
+      "status": "included",
+      "available": 4757,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "American Wirehair": {
+      "status": "excluded_too_small",
+      "available": 16
+    },
+    "Balinese": {
+      "status": "included",
+      "available": 238,
+      "selected": 238,
+      "splits": {
+        "train": 167,
+        "val": 36,
+        "test": 35
+      },
+      "storage": {
+        "hardlink": 238
+      }
+    },
+    "Bengal": {
+      "status": "included",
+      "available": 2362,
+      "selected": 2362,
+      "splits": {
+        "train": 1653,
+        "val": 354,
+        "test": 355
+      },
+      "storage": {
+        "hardlink": 2362
+      }
+    },
+    "Birman": {
+      "status": "included",
+      "available": 212,
+      "selected": 212,
+      "splits": {
+        "train": 148,
+        "val": 32,
+        "test": 32
+      },
+      "storage": {
+        "hardlink": 212
+      }
+    },
+    "Bombay": {
+      "status": "included",
+      "available": 1705,
+      "selected": 1705,
+      "splits": {
+        "train": 1194,
+        "val": 256,
+        "test": 255
+      },
+      "storage": {
+        "hardlink": 1705
+      }
+    },
+    "British Shorthair": {
+      "status": "included",
+      "available": 540,
+      "selected": 540,
+      "splits": {
+        "train": 378,
+        "val": 81,
+        "test": 81
+      },
+      "storage": {
+        "hardlink": 540
+      }
+    },
+    "Burmese": {
+      "status": "included",
+      "available": 322,
+      "selected": 322,
+      "splits": {
+        "train": 225,
+        "val": 48,
+        "test": 49
+      },
+      "storage": {
+        "hardlink": 322
+      }
+    },
+    "Burmilla": {
+      "status": "excluded_too_small",
+      "available": 8
+    },
+    "Chartreux": {
+      "status": "excluded_too_small",
+      "available": 80
+    },
+    "Chausie": {
+      "status": "excluded_too_small",
+      "available": 23
+    },
+    "Cornish Rex": {
+      "status": "included",
+      "available": 147,
+      "selected": 147,
+      "splits": {
+        "train": 103,
+        "val": 22,
+        "test": 22
+      },
+      "storage": {
+        "hardlink": 147
+      }
+    },
+    "Cymric": {
+      "status": "excluded_too_small",
+      "available": 15
+    },
+    "Devon Rex": {
+      "status": "included",
+      "available": 106,
+      "selected": 106,
+      "splits": {
+        "train": 74,
+        "val": 16,
+        "test": 16
+      },
+      "storage": {
+        "hardlink": 106
+      }
+    },
+    "Domestic Long Hair": {
+      "status": "included",
+      "available": 4174,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Domestic Medium Hair": {
+      "status": "included",
+      "available": 5157,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Domestic Short Hair": {
+      "status": "included",
+      "available": 49954,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Egyptian Mau": {
+      "status": "included",
+      "available": 286,
+      "selected": 286,
+      "splits": {
+        "train": 200,
+        "val": 43,
+        "test": 43
+      },
+      "storage": {
+        "hardlink": 286
+      }
+    },
+    "Exotic Shorthair": {
+      "status": "included",
+      "available": 451,
+      "selected": 451,
+      "splits": {
+        "train": 316,
+        "val": 68,
+        "test": 67
+      },
+      "storage": {
+        "hardlink": 451
+      }
+    },
+    "Havana": {
+      "status": "included",
+      "available": 170,
+      "selected": 170,
+      "splits": {
+        "train": 119,
+        "val": 26,
+        "test": 25
+      },
+      "storage": {
+        "hardlink": 170
+      }
+    },
+    "Himalayan": {
+      "status": "included",
+      "available": 1225,
+      "selected": 1225,
+      "splits": {
+        "train": 858,
+        "val": 184,
+        "test": 183
+      },
+      "storage": {
+        "hardlink": 1225
+      }
+    },
+    "Japanese Bobtail": {
+      "status": "included",
+      "available": 118,
+      "selected": 118,
+      "splits": {
+        "train": 83,
+        "val": 18,
+        "test": 17
+      },
+      "storage": {
+        "hardlink": 118
+      }
+    },
+    "Javanese": {
+      "status": "excluded_too_small",
+      "available": 23
+    },
+    "Korat": {
+      "status": "excluded_too_small",
+      "available": 65
+    },
+    "LaPerm": {
+      "status": "excluded_too_small",
+      "available": 16
+    },
+    "Maine Coon": {
+      "status": "included",
+      "available": 1297,
+      "selected": 1297,
+      "splits": {
+        "train": 908,
+        "val": 195,
+        "test": 194
+      },
+      "storage": {
+        "hardlink": 1297
+      }
+    },
+    "Manx": {
+      "status": "included",
+      "available": 1938,
+      "selected": 1938,
+      "splits": {
+        "train": 1357,
+        "val": 291,
+        "test": 290
+      },
+      "storage": {
+        "hardlink": 1938
+      }
+    },
+    "Munchkin": {
+      "status": "included",
+      "available": 175,
+      "selected": 175,
+      "splits": {
+        "train": 122,
+        "val": 26,
+        "test": 27
+      },
+      "storage": {
+        "hardlink": 175
+      }
+    },
+    "Nebelung": {
+      "status": "included",
+      "available": 138,
+      "selected": 138,
+      "splits": {
+        "train": 97,
+        "val": 21,
+        "test": 20
+      },
+      "storage": {
+        "hardlink": 138
+      }
+    },
+    "Norwegian Forest Cat": {
+      "status": "included",
+      "available": 559,
+      "selected": 559,
+      "splits": {
+        "train": 391,
+        "val": 84,
+        "test": 84
+      },
+      "storage": {
+        "hardlink": 559
+      }
+    },
+    "Ocicat": {
+      "status": "included",
+      "available": 114,
+      "selected": 114,
+      "splits": {
+        "train": 80,
+        "val": 17,
+        "test": 17
+      },
+      "storage": {
+        "hardlink": 114
+      }
+    },
+    "Oriental Long Hair": {
+      "status": "excluded_too_small",
+      "available": 36
+    },
+    "Oriental Short Hair": {
+      "status": "included",
+      "available": 455,
+      "selected": 455,
+      "splits": {
+        "train": 318,
+        "val": 68,
+        "test": 69
+      },
+      "storage": {
+        "hardlink": 455
+      }
+    },
+    "Persian": {
+      "status": "included",
+      "available": 3756,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Pixiebob": {
+      "status": "included",
+      "available": 108,
+      "selected": 108,
+      "splits": {
+        "train": 76,
+        "val": 16,
+        "test": 16
+      },
+      "storage": {
+        "hardlink": 108
+      }
+    },
+    "Ragamuffin": {
+      "status": "included",
+      "available": 130,
+      "selected": 130,
+      "splits": {
+        "train": 91,
+        "val": 20,
+        "test": 19
+      },
+      "storage": {
+        "hardlink": 130
+      }
+    },
+    "Ragdoll": {
+      "status": "included",
+      "available": 2511,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Russian Blue": {
+      "status": "included",
+      "available": 1721,
+      "selected": 1721,
+      "splits": {
+        "train": 1205,
+        "val": 258,
+        "test": 258
+      },
+      "storage": {
+        "hardlink": 1721
+      }
+    },
+    "Scottish Fold": {
+      "status": "included",
+      "available": 367,
+      "selected": 367,
+      "splits": {
+        "train": 257,
+        "val": 55,
+        "test": 55
+      },
+      "storage": {
+        "hardlink": 367
+      }
+    },
+    "Selkirk Rex": {
+      "status": "excluded_too_small",
+      "available": 70
+    },
+    "Siamese": {
+      "status": "included",
+      "available": 2656,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Siberian": {
+      "status": "included",
+      "available": 185,
+      "selected": 185,
+      "splits": {
+        "train": 130,
+        "val": 28,
+        "test": 27
+      },
+      "storage": {
+        "hardlink": 185
+      }
+    },
+    "Singapura": {
+      "status": "excluded_too_small",
+      "available": 21
+    },
+    "Snowshoe": {
+      "status": "included",
+      "available": 1554,
+      "selected": 1554,
+      "splits": {
+        "train": 1088,
+        "val": 233,
+        "test": 233
+      },
+      "storage": {
+        "hardlink": 1554
+      }
+    },
+    "Somali": {
+      "status": "excluded_too_small",
+      "available": 30
+    },
+    "Sphynx": {
+      "status": "included",
+      "available": 125,
+      "selected": 125,
+      "splits": {
+        "train": 88,
+        "val": 19,
+        "test": 18
+      },
+      "storage": {
+        "hardlink": 125
+      }
+    },
+    "Tonkinese": {
+      "status": "included",
+      "available": 238,
+      "selected": 238,
+      "splits": {
+        "train": 167,
+        "val": 36,
+        "test": 35
+      },
+      "storage": {
+        "hardlink": 238
+      }
+    },
+    "Turkish Angora": {
+      "status": "included",
+      "available": 712,
+      "selected": 712,
+      "splits": {
+        "train": 498,
+        "val": 107,
+        "test": 107
+      },
+      "storage": {
+        "hardlink": 712
+      }
+    },
+    "Turkish Van": {
+      "status": "included",
+      "available": 757,
+      "selected": 757,
+      "splits": {
+        "train": 530,
+        "val": 114,
+        "test": 113
+      },
+      "storage": {
+        "hardlink": 757
+      }
+    },
+    "York Chocolate": {
+      "status": "excluded_too_small",
+      "available": 1
+    }
+  },
+  "coats": {
+    "Black tuxedo": {
+      "status": "included",
+      "available": 3018,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Calico": {
+      "status": "included",
+      "available": 3038,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Dilute calico": {
+      "status": "included",
+      "available": 3137,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Dilute tortoiseshell": {
+      "status": "included",
+      "available": 3031,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Silver": {
+      "status": "excluded_too_small",
+      "available": 87
+    },
+    "Tabby": {
+      "status": "included",
+      "available": 2855,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Tiger tabby": {
+      "status": "included",
+      "available": 2190,
+      "selected": 2190,
+      "splits": {
+        "train": 1533,
+        "val": 328,
+        "test": 329
+      },
+      "storage": {
+        "hardlink": 2190
+      }
+    },
+    "Torbie": {
+      "status": "included",
+      "available": 3288,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    },
+    "Tortoiseshell": {
+      "status": "included",
+      "available": 3798,
+      "selected": 2500,
+      "splits": {
+        "train": 1750,
+        "val": 375,
+        "test": 375
+      },
+      "storage": {
+        "hardlink": 2500
+      }
+    }
+  },
+  "rejected_images": []
+}

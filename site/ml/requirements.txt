@@ -1,8 +1,9 @@
-torch>=2.2
-torchvision>=0.17
-numpy>=1.26
-pillow>=10.0
-scikit-learn>=1.4
-matplotlib>=3.8
-onnx>=1.16
-onnxruntime>=1.18
+# Versions verified together with Python 3.12.10 on Windows.
+torch==2.14.0
+torchvision==0.29.0
+numpy==2.5.2
+pillow==12.3.0
+scikit-learn==1.9.0
+matplotlib==3.11.1
+onnx==1.22.0
+onnxruntime==1.29.0

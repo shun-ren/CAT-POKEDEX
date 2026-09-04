@@ -1,6 +1,6 @@
 # CATDEX engineering handover
 
-Last updated: 3 September 2026
+Last updated: 4 September 2026
 
 This document is the working context for the next Codex session or developer. Read it together with [`README.md`](./README.md) before changing the product.
 
@@ -57,21 +57,29 @@ The app is a static web prototype under `site/build`, with ONNX Runtime Web and 
 | `site/ml/prepare_data.py` | Reproducible source-class mapping, animal-level splitting and class balancing |
 | `site/ml/train.py` | Balanced ResNet18 transfer-learning workflow for breed or coat labels |
 | `site/ml/evaluate.py` | Held-out accuracy, macro F1, per-label recall and confusion-matrix reporting |
-| `site/ml/export_for_catdex.py` | Candidate ONNX export without replacing the website model |
+| `site/ml/export_for_catdex.py` | Candidate ONNX export, label checking and runtime validation without replacing the website model |
+| `site/ml/requirements.txt` | Exact Python 3.12 dependency versions verified for the project virtual environment |
 | `site/scripts/verify-build.mjs` | Dependency-free build verification |
 | `site/.openai/hosting.json` | OpenAI Sites metadata and static build directory |
 
-There is deliberately no framework or install step. `npm run build` runs a consistency check rather than compiling assets.
+The static website has no framework compilation step: `npm run build` runs a consistency check rather than compiling assets. The separate ML workflow does require the Python virtual environment documented below.
 
 ### ML dataset and environment status
 
-The user downloaded the Petfinder-derived `cat-breeds-dataset-cleared` data into `site/ml/data/original_dataset/`. It contains 67 source folders plus an 86 MB `cats.csv`. The CSV stores Petfinder listing metadata, source breed labels, image URLs, and a `coat` column that mainly means hair length (`Short`, `Medium`, or `Long`), not colour/pattern. Image filenames begin with the Petfinder animal ID, which is used to keep related photos in one data split.
+The user downloaded the Petfinder-derived `cat-breeds-dataset-cleared` data and used it to prepare the ML splits. The raw `site/ml/data/original_dataset/` folder—including its 86 MB `cats.csv`—was deliberately deleted on 3 September 2026 after verifying that all 56,956 prepared images were hard links and remained accessible. The raw dataset is not in Git and must be downloaded again if the splits ever need to be regenerated from source.
 
-`python ml/prepare_data.py --skip-image-validation` completed successfully. It created hard-linked, deterministic 70/15/15 train/validation/test splits without modifying the source data:
+`python ml/prepare_data.py --skip-image-validation` completed successfully before the raw source was removed. It created hard-linked, deterministic 70/15/15 train/validation/test splits:
 
 - `site/ml/data/breeds/`: 40 included breed/type labels, 37,266 selected images;
 - `site/ml/data/coats/`: 8 included pattern labels, 19,690 selected images; and
 - `site/ml/data/preparation-report.json`: complete mappings, exclusions and split counts.
+
+The exact prepared directories are also backed up in Git LFS as
+`site/ml/data-archives/breeds.tar` and `coats.tar`. Their internal file counts
+were verified as 37,266 and 19,690 respectively before upload, and
+`SHA256SUMS.txt` records their hashes. On another device, install Git LFS, run
+`git lfs pull`, then extract both archives into `site/ml/data/`. The archive
+README records the Kaggle source, listed `DbCL-1.0` license and restore steps.
 
 Preparation excluded source classes with fewer than 100 images and capped each included class at 2,500 images. It merges `Applehead Siamese` into `Siamese`, and both hairless aliases into `Sphynx`. Pattern folders such as Calico, Tabby, Torbie, Tortoiseshell and Tuxedo are excluded from breed training and routed to coat training. Trait/ambiguous folders such as `Extra-Toes Cat - Hemingway Polydactyl`, `Chinchilla`, and `Oriental Tabby` are excluded from breed training.
 
@@ -79,34 +87,43 @@ Image decoding validation was skipped during preparation because Pillow was not 
 
 The prepared coat data is incomplete for production: it covers Black tuxedo, Calico, Dilute calico, Dilute tortoiseshell, Tabby, Tiger tabby, Torbie and Tortoiseshell. It lacks required negative/alternative classes such as solid black, solid white, ginger, colour-point and general bicolour. A coat model trained only on these eight labels will force every upload into one of them, so it must not replace the website heuristic yet.
 
-The system `python` belongs to the Raspberry Pi Pico SDK and has no `pip` or `venv`. A verified official Python 3.12.10 portable runtime and all packages from `ml/requirements.txt` are available at `site/.python-portable/`. This directory is intentionally ignored by Git. Use it directly:
+Python 3.12.10 is installed for the Windows user, and a conventional virtual environment with all packages from `ml/requirements.txt` is available at `site/.venv/`. The requirements file now pins the eight direct dependencies that the scripts use: PyTorch, TorchVision, NumPy, Pillow, scikit-learn, Matplotlib, ONNX and ONNX Runtime. Exact pins make a recreated environment match the versions checked on this machine. The virtual environment is intentionally ignored by Git; recreate it instead of copying it between devices.
+
+Create or refresh the environment from `site/`:
 
 ```powershell
 cd site
-.\.python-portable\python.exe -c "import torch; print(torch.__version__)"
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r ml\requirements.txt
+python -m pip check
 ```
 
-Installed PyTorch is CPU-only (`torch 2.14.0+cpu`), CUDA is unavailable, and PyTorch detected four CPU threads. A six-epoch coat linear-probe run was started but stopped cleanly at the user's request before epoch 1 completed. No `best.pt`, labels, evaluation result, or candidate ONNX was created. No trained candidate was promoted to `site/build/models/`.
+Installed PyTorch is CPU-only (`torch 2.14.0+cpu`), CUDA is unavailable, and PyTorch detected four CPU threads. The environment passed `pip check` and imported all eight direct dependencies on 4 September 2026. A six-epoch coat linear-probe run was started but stopped cleanly at the user's request before epoch 1 completed. No `best.pt`, labels, evaluation result, or candidate ONNX was created. No trained candidate was promoted to `site/build/models/`.
 
 ### Exact next-session ML steps
 
-1. Do not rerun `prepare_data.py` over the populated output folders. It intentionally refuses to do so. Review `ml/data/preparation-report.json` first.
+1. Do not rerun `prepare_data.py` over the populated output folders. It intentionally refuses to do so, and the raw source folder has been removed. Review `ml/data/preparation-report.json` first.
 2. Add or run a decode audit over both prepared datasets before training. Remove or replace unreadable source images, then regenerate the split deliberately if any are found.
 3. Prefer a CUDA-capable computer or a hosted notebook for the final run. The local four-thread CPU did not finish one coat epoch in the available session.
 4. If continuing locally, establish a one-epoch timing/quality baseline first:
 
 ```powershell
 cd site
-.\.python-portable\python.exe ml\train.py --data ml\data\coats --epochs 1 --output ml\output\coat --batch-size 64
-.\.python-portable\python.exe ml\evaluate.py --data ml\data\coats --checkpoint ml\output\coat\best.pt --output ml\output\coat
+.\.venv\Scripts\Activate.ps1
+python ml\train.py --data ml\data\coats --epochs 1 --output ml\output\coat --batch-size 64
+python ml\evaluate.py --data ml\data\coats --checkpoint ml\output\coat\best.pt --output ml\output\coat
 
-.\.python-portable\python.exe ml\train.py --data ml\data\breeds --epochs 1 --output ml\output\breed --batch-size 64
-.\.python-portable\python.exe ml\evaluate.py --data ml\data\breeds --checkpoint ml\output\breed\best.pt --output ml\output\breed
+python ml\train.py --data ml\data\breeds --epochs 1 --output ml\output\breed --batch-size 64
+python ml\evaluate.py --data ml\data\breeds --checkpoint ml\output\breed\best.pt --output ml\output\breed
 ```
 
 5. Treat these one-epoch runs as baselines, not deployable models. For a final run, increase epochs and use `--fine-tune` on GPU, then inspect macro F1, every per-label recall, and the confusion matrix.
 6. Do not deploy the current eight-class coat data until missing coat classes and an unknown/other strategy are added. A closed-set softmax score is not reliable out-of-distribution confidence.
 7. Export and integrate only candidates that pass the agreed release gate. Keep the current website model untouched until then.
+
+`export_for_catdex.py` verifies that the labels match the checkpoint, validates the ONNX graph, and performs one CPU Runtime inference before reporting success. It derives the correct sidecar name from the output (for example, `cat-coat-labels.json` for a coat candidate).
 
 ## 4. Data and behaviour
 
@@ -188,9 +205,12 @@ The last completed checks were:
 
 - `npm.cmd run build`
 - `node --check build/app.js`
-- an HTTP request to `/`, which returned status 200
+- Python byte-compilation of every script under `site/ml/`
+- `python -m pip check`
+- imports of every direct package pinned in `site/ml/requirements.txt`
+- an end-to-end temporary two-class ONNX export, graph validation and Runtime inference
 
-Browser visual QA and WebMCP contract execution were not available in the original environment. The next developer should test desktop and mobile layouts, capture a real photo, refresh to verify persistence, inspect a saved detail view, and exercise search and regional filtering.
+Browser visual QA and WebMCP contract execution were not available in the current environment. The next developer should test desktop and mobile layouts, capture a real photo, refresh to verify persistence, inspect a saved detail view, and exercise search and regional filtering.
 
 ## 7. Known gaps
 
@@ -271,3 +291,12 @@ user_unlocks
 - Preserve the original generated assets unless the user explicitly requests a redesign.
 - Keep the app usable without sound and with reduced motion enabled.
 - Update this handover and the README whenever architecture, persistence, privacy rules or deployment state changes.
+
+## 10. Cleanup completed on 4 September 2026
+
+- Removed obsolete CSS for a superseded Miso `<img>` launcher, its unused animation, old candidate markup, and background-image photo containers that now render real `<img>` elements.
+- Consolidated duplicate hero, cat-fact, responsive and pixel-preview declarations without changing the final computed styles.
+- Reformatted the ML scripts for readability and made their label-related messages work for both breed and coat training.
+- Removed an ignored 5.8 MB `.local-backups/site-git/` copy of the retired nested Git metadata. It was not used by the current repository and is not recoverable from the workspace after deletion.
+- Kept all build images, the browser ONNX model, its labels and ONNX Runtime vendor files because reference checks confirmed they are active.
+- Did not commit, push or deploy these changes; they remain local for review.

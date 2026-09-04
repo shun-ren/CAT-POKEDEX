@@ -201,7 +201,7 @@ function renderCatalog() {
     return matchesText && (region === 'all' || cat.region === region);
   });
 
-  const cards = filtered.map((cat, index) => `
+  const cards = filtered.map((cat) => `
     <button class="cat-card" type="button" data-cat-id="${escapeHtml(cat.id)}" aria-label="View ${escapeHtml(cat.nickname || cat.breed)} details">
       <div class="cat-card-image ${cat.photo ? 'is-photo' : 'is-sprite'}" style="${cat.photo ? '' : imageStyle(cat)}">
         ${uploadedPortrait(cat, 'uploaded-card-portrait')}
