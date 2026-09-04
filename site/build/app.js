@@ -1,6 +1,24 @@
 const TOTAL_BREEDS = 73;
 const STORAGE_KEY = 'catdex.sightings.v1';
+const TRAIL_STORAGE_KEY = 'catdex.trails.v1';
 const REGIONS = ['Central', 'East', 'North', 'North-East', 'West', 'Southern Islands'];
+const TRAIL_LANDMARKS = [
+  { id:'courtyard', name:'HDB Courtyard', region:'West', x:20, y:22, message:'Laundry flutters above a quiet courtyard. A perfect shady pause.' },
+  { id:'hawker', name:'Hawker Pavilion', region:'Central', x:45, y:34, message:'The pavilion smells interesting, but your explorer wisely keeps to cat-safe snacks.' },
+  { id:'shelter', name:'Community Cat Garden', region:'West', x:20, y:63, message:'You found a cared-for community-cat garden with water and sheltered resting spots.' },
+  { id:'orchids', name:'Orchid Walk', region:'Southern Islands', x:27, y:83, message:'Orchids line the path. Your explorer stops to inspect every leaf.' },
+  { id:'raintree', name:'Rain Tree Loop', region:'East', x:85, y:51, message:'A huge rain tree makes a cool green canopy over the park trail.' },
+  { id:'bridge', name:'Canal Footbridge', region:'North-East', x:61, y:69, message:'The canal sparkles below the footbridge. You discovered all the best breezy spots.' }
+];
+const TRAIL_OBSTACLES = [
+  { x1:2, y1:2, x2:35, y2:12 },
+  { x1:2, y1:13, x2:13, y2:31 },
+  { x1:30, y1:12, x2:37, y2:31 },
+  { x1:10, y1:27, x2:21, y2:38 },
+  { x1:25, y1:27, x2:34, y2:38 },
+  { x1:49, y1:12, x2:66, y2:29 },
+  { x1:4, y1:45, x2:27, y2:58 }
+];
 const CAT_FACTS = [
   'Cats use their whiskers to sense nearby objects and openings, even in low light. Whiskers are sensitive tools, so they should never be trimmed.',
   'A slow blink is often a relaxed, friendly signal. Try softly closing your eyes and looking slightly away instead of staring.',
@@ -139,7 +157,19 @@ Object.assign(els, {
   expertChat: document.querySelector('#expertChat'),
   expertLauncher: document.querySelector('#expertLauncher'),
   chatMessages: document.querySelector('#chatMessages'),
-  chatInput: document.querySelector('#chatInput')
+  chatInput: document.querySelector('#chatInput'),
+  trailCatSelect: document.querySelector('#trailCatSelect'),
+  trailPassportPhoto: document.querySelector('#trailPassportPhoto'),
+  trailCatName: document.querySelector('#trailCatName'),
+  trailCatType: document.querySelector('#trailCatType'),
+  trailDiscoveryList: document.querySelector('#trailDiscoveryList'),
+  trailViewport: document.querySelector('#trailViewport'),
+  trailPlayer: document.querySelector('#trailPlayer'),
+  trailLandmarks: document.querySelector('#trailLandmarks'),
+  trailArea: document.querySelector('#trailArea'),
+  trailProgress: document.querySelector('#trailProgress'),
+  trailSteps: document.querySelector('#trailSteps'),
+  trailMessage: document.querySelector('#trailMessage')
 });
 
 let soundOn = true;
@@ -148,6 +178,8 @@ let suggestionConfidence = 0;
 let coatConfidence = 0;
 let analysisSequence = 0;
 let sightings = loadSightings();
+let trailStates = loadTrailStates();
+let currentTrailCatId = sightings[0]?.id || '';
 
 function loadSightings() {
   try {
@@ -164,6 +196,18 @@ function saveSightings() {
     showToast('DEVICE STORAGE IS FULL — ENTRY KEPT FOR THIS SESSION');
     return false;
   }
+}
+
+function loadTrailStates() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(TRAIL_STORAGE_KEY));
+    return saved && typeof saved === 'object' ? saved : {};
+  } catch { return {}; }
+}
+
+function saveTrailStates() {
+  try { localStorage.setItem(TRAIL_STORAGE_KEY, JSON.stringify(trailStates)); }
+  catch { /* Trail progress remains available for this session. */ }
 }
 
 function spritePosition(index) {
@@ -245,7 +289,163 @@ function renderMap() {
   });
 }
 
-function renderAll() { renderCatalog(); renderStats(); renderMap(); }
+function trailStateFor(catId) {
+  const saved = trailStates[catId];
+  if (!saved || !Number.isFinite(saved.x) || !Number.isFinite(saved.y)) {
+    trailStates[catId] = { x:43, y:57, steps:0, discoveries:[] };
+  } else {
+    saved.steps = Number.isFinite(saved.steps) ? saved.steps : 0;
+    saved.discoveries = Array.isArray(saved.discoveries) ? saved.discoveries : [];
+  }
+  return trailStates[catId];
+}
+
+function trailAreaFor(x, y) {
+  if (y > 72 && x < 46) return 'SOUTHERN GARDENS';
+  if (x > 72) return 'EAST RAIN TREE PARK';
+  if (y < 28 && x < 39) return 'WEST COURTYARD';
+  if (x > 55 && y < 44) return 'NORTH-EAST CANAL';
+  if (y > 60 && x > 45) return 'CANAL CROSSING';
+  return 'CENTRAL GREEN';
+}
+
+function renderTrailRoster() {
+  if (!els.trailCatSelect) return;
+  if (!sightings.some(cat => cat.id === currentTrailCatId)) currentTrailCatId = sightings[0]?.id || '';
+  els.trailCatSelect.innerHTML = sightings.map(cat =>
+    `<option value="${escapeHtml(cat.id)}">${escapeHtml(cat.nickname || 'Mystery cat')} · ${escapeHtml(cat.coat || cat.breed)}</option>`
+  ).join('');
+  els.trailCatSelect.value = currentTrailCatId;
+  renderTrailGame();
+}
+
+function renderTrailGame() {
+  const cat = sightings.find(item => item.id === currentTrailCatId);
+  if (!cat || !els.trailPlayer) return;
+  const state = trailStateFor(cat.id);
+  const portrait = uploadedPortrait(cat, 'trail-avatar-image');
+
+  els.trailCatName.textContent = cat.nickname || 'Mystery cat';
+  els.trailCatType.textContent = `${cat.coat || 'Unknown coat'} · ${cat.breed}`;
+  els.trailPlayer.innerHTML = portrait;
+  els.trailPassportPhoto.innerHTML = portrait;
+
+  if (cat.photo) {
+    els.trailPlayer.style.backgroundImage = 'none';
+    els.trailPassportPhoto.style.backgroundImage = 'none';
+  } else {
+    const position = spritePosition(cat.sprite ?? 0);
+    els.trailPlayer.style.backgroundImage = "url('./assets/cat-sprite-atlas.png')";
+    els.trailPassportPhoto.style.backgroundImage = "url('./assets/cat-sprite-atlas.png')";
+    els.trailPlayer.style.backgroundPosition = position;
+    els.trailPassportPhoto.style.backgroundPosition = position;
+  }
+
+  els.trailPlayer.style.left = `${state.x}%`;
+  els.trailPlayer.style.top = `${state.y}%`;
+  els.trailArea.textContent = trailAreaFor(state.x, state.y);
+  els.trailProgress.textContent = `${state.discoveries.length} / ${TRAIL_LANDMARKS.length}`;
+  els.trailSteps.textContent = String(state.steps).padStart(3, '0').slice(-3);
+  els.trailDiscoveryList.innerHTML = TRAIL_LANDMARKS.map(landmark => {
+    const found = state.discoveries.includes(landmark.id);
+    return `<span class="trail-discovery ${found ? 'found' : ''}">${found ? escapeHtml(landmark.name) : 'UNDISCOVERED'}</span>`;
+  }).join('');
+  els.trailLandmarks.innerHTML = TRAIL_LANDMARKS.map(landmark => {
+    const found = state.discoveries.includes(landmark.id);
+    return `<span class="trail-landmark ${found ? 'found' : ''}" style="left:${landmark.x}%;top:${landmark.y}%">${found ? '★' : '?'}</span>`;
+  }).join('');
+}
+
+function trailPositionBlocked(x, y) {
+  return TRAIL_OBSTACLES.some(obstacle => x > obstacle.x1 && x < obstacle.x2 && y > obstacle.y1 && y < obstacle.y2);
+}
+
+function discoverTrailLandmark(state) {
+  const landmark = TRAIL_LANDMARKS.find(item => !state.discoveries.includes(item.id) && Math.hypot(state.x-item.x, state.y-item.y) < 5.5);
+  if (!landmark) return false;
+  state.discoveries.push(landmark.id);
+  els.trailMessage.textContent = `${landmark.name.toUpperCase()} FOUND! ${landmark.message}`;
+  showToast(`${landmark.name.toUpperCase()} DISCOVERED!`);
+  playTone(780, .10);
+  window.setTimeout(() => playTone(980, .12), 100);
+  return true;
+}
+
+function moveTrail(direction) {
+  const cat = sightings.find(item => item.id === currentTrailCatId);
+  if (!cat) return;
+  const state = trailStateFor(cat.id);
+  const movements = { up:[0,-2.6], down:[0,2.6], left:[-1.8,0], right:[1.8,0] };
+  const [dx, dy] = movements[direction] || [0,0];
+  const nextX = Math.max(3, Math.min(97, state.x + dx));
+  const nextY = Math.max(4, Math.min(96, state.y + dy));
+  if (trailPositionBlocked(nextX, nextY)) {
+    els.trailMessage.textContent = 'That way is blocked. Try following the garden path.';
+    playTone(180, .04);
+    return;
+  }
+
+  state.x = nextX;
+  state.y = nextY;
+  state.steps += 1;
+  const discovered = discoverTrailLandmark(state);
+  if (!discovered) els.trailMessage.textContent = `${cat.nickname || 'Your cat'} is exploring ${trailAreaFor(state.x, state.y).toLowerCase()}.`;
+  saveTrailStates();
+  renderTrailGame();
+  els.trailPlayer.classList.remove('walking');
+  void els.trailPlayer.offsetWidth;
+  els.trailPlayer.classList.add('walking');
+}
+
+function walkTrailTo(targetX, targetY) {
+  const cat = sightings.find(item => item.id === currentTrailCatId);
+  if (!cat) return;
+  const state = trailStateFor(cat.id);
+  const destinationX = Math.max(3, Math.min(97, targetX));
+  const destinationY = Math.max(4, Math.min(96, targetY));
+  const distanceX = destinationX - state.x;
+  const distanceY = destinationY - state.y;
+  const segments = Math.max(1, Math.ceil(Math.max(Math.abs(distanceX) / 1.8, Math.abs(distanceY) / 2.6)));
+  let nextX = state.x;
+  let nextY = state.y;
+  let travelled = 0;
+
+  for (let step = 1; step <= segments; step++) {
+    const candidateX = state.x + distanceX * (step / segments);
+    const candidateY = state.y + distanceY * (step / segments);
+    if (trailPositionBlocked(candidateX, candidateY)) break;
+    nextX = candidateX;
+    nextY = candidateY;
+    travelled += 1;
+  }
+
+  if (!travelled) {
+    els.trailMessage.textContent = 'That spot is blocked. Choose a nearby path or garden lawn.';
+    playTone(180, .04);
+    return;
+  }
+
+  state.x = nextX;
+  state.y = nextY;
+  state.steps += travelled;
+  const discovered = discoverTrailLandmark(state);
+  if (!discovered) els.trailMessage.textContent = `${cat.nickname || 'Your cat'} walked to ${trailAreaFor(state.x, state.y).toLowerCase()}.`;
+  saveTrailStates();
+  renderTrailGame();
+  els.trailPlayer.classList.remove('walking');
+  void els.trailPlayer.offsetWidth;
+  els.trailPlayer.classList.add('walking');
+}
+
+function resetTrail() {
+  if (!currentTrailCatId) return;
+  trailStates[currentTrailCatId] = { x:43, y:57, steps:0, discoveries:[] };
+  saveTrailStates();
+  els.trailMessage.textContent = 'Trail reset. Start again from Central Green.';
+  renderTrailGame();
+}
+
+function renderAll() { renderCatalog(); renderStats(); renderMap(); renderTrailRoster(); }
 
 function openDetail(id) {
   const cat = sightings.find(item => item.id === id);
@@ -710,6 +910,40 @@ document.querySelector('#chatForm').addEventListener('submit', event => {
 });
 document.querySelector('#chatSuggestions').addEventListener('click', event => {
   if (event.target.matches('button')) askMiso(event.target.textContent);
+});
+
+els.trailCatSelect.addEventListener('change', () => {
+  currentTrailCatId = els.trailCatSelect.value;
+  const cat = sightings.find(item => item.id === currentTrailCatId);
+  els.trailMessage.textContent = `${cat?.nickname || 'Your cat'} is ready to explore.`;
+  renderTrailGame();
+  els.trailViewport.focus();
+});
+document.querySelector('#trailResetButton').addEventListener('click', resetTrail);
+document.querySelectorAll('[data-trail-move]').forEach(button => {
+  button.addEventListener('click', () => {
+    moveTrail(button.dataset.trailMove);
+    els.trailViewport.focus();
+  });
+});
+els.trailViewport.addEventListener('click', event => {
+  const bounds = els.trailViewport.getBoundingClientRect();
+  const targetX = ((event.clientX - bounds.left) / bounds.width) * 100;
+  const targetY = ((event.clientY - bounds.top) / bounds.height) * 100;
+  els.trailViewport.focus();
+  walkTrailTo(targetX, targetY);
+});
+els.trailViewport.addEventListener('keydown', event => {
+  const controls = {
+    ArrowUp:'up', w:'up', W:'up',
+    ArrowDown:'down', s:'down', S:'down',
+    ArrowLeft:'left', a:'left', A:'left',
+    ArrowRight:'right', d:'right', D:'right'
+  };
+  const direction = controls[event.key];
+  if (!direction) return;
+  event.preventDefault();
+  moveTrail(direction);
 });
 
 const sections = [...document.querySelectorAll('main > section[id]')];

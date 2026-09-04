@@ -16,6 +16,7 @@ The current version is a functional browser prototype. A user can take or choose
 - Breed and sighting progress counters (`unlocked / 73`)
 - Search and broad-region filtering
 - A cartoon pixel-art Singapore map with regional sighting totals
+- CAT Trails, an original top-down 16-bit Singapore mini-game where a selected stashed cat explores six landmark stops
 - Six privacy-safe regions: Central, East, North, North-East, West and Southern Islands
 - Device-local persistence for the prototype
 - Responsive desktop and mobile layouts
@@ -41,7 +42,7 @@ For a production release, use:
 
 Appearance alone cannot reliably prove a cat's pedigree. The offline analyser separates coat colour/pattern from breed, then combines the results for display. It distinguishes tuxedo, tabby, calico, tortoiseshell, ginger, black, blue-grey, colour-point, white and bicolour appearances. Breed ranking runs locally through an ONNX ResNet18 trained on the 12 cat breeds in Oxford-IIIT Pet. Production still needs broader training data, calibrated abstention, and evaluation on Singapore community-cat imagery.
 
-The repository includes a local training workflow in [`site/ml`](./site/ml). The exact prepared train/validation/test split is backed up as two Git LFS archives with checksums and restore instructions under [`site/ml/data-archives`](./site/ml/data-archives). Add only evidence-backed, consented training images to its train/validation/test folders; run evaluation on the held-out test split; then export a candidate ONNX model. Candidate exports never replace the browser model automatically.
+The repository includes a local two-model training workflow in [`site/ml`](./site/ml): a breed/type ResNet18 and a separate coat/pattern ResNet18. The exact prepared train/validation/test split is backed up as two Git LFS archives with checksums and restore instructions under [`site/ml/data-archives`](./site/ml/data-archives). Train on another device if preferred, then bring back the reviewed `best.pth`, labels and test report before exporting a candidate ONNX model. Candidate exports never replace the browser model automatically.
 
 The total of 73 is a configurable starter catalogue. Cat registries recognise different totals, so a production release should choose and cite one registry/version rather than presenting a universal number.
 
@@ -73,6 +74,7 @@ CAT-POKEDEX/
       ├─ app.js
       └─ assets/
          ├─ cat-sprite-atlas.png
+         ├─ cat-trails-singapore-map.png
          ├─ singapore-regions.png
          └─ og.png
 ```

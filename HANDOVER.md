@@ -51,12 +51,13 @@ The app is a static web prototype under `site/build`, with ONNX Runtime Web and 
 | `site/build/app.js` | State, rendering, cartoon treatment, conservative type analysis, facts, chat, filtering and WebMCP registration |
 | `site/build/assets/cat-sprite-atlas.png` | Eight original pixel-art demonstration cats in a 4 × 2 atlas |
 | `site/build/assets/singapore-regions.png` | Original simplified Singapore region map |
+| `site/build/assets/cat-trails-singapore-map.png` | Original top-down 16-bit environment for the CAT Trails mini-game |
 | `site/build/assets/og.png` | Social preview card |
 | `site/build/models/cat-breed-resnet18.onnx` | Local Oxford-IIIT Pet ResNet18 breed weights |
 | `site/build/vendor/ort.min.js` and `.wasm` | Vendored ONNX Runtime Web inference engine |
 | `site/ml/prepare_data.py` | Reproducible source-class mapping, animal-level splitting and class balancing |
-| `site/ml/train.py` | Balanced ResNet18 transfer-learning workflow for breed or coat labels |
-| `site/ml/evaluate.py` | Held-out accuracy, macro F1, per-label recall and confusion-matrix reporting |
+| `site/ml/train_breed.py` / `train_coat.py` | Separate staged ResNet18 training entry points |
+| `site/ml/evaluate_breed.py` / `evaluate_coat.py` | Separate held-out test evaluation entry points |
 | `site/ml/export_for_catdex.py` | Candidate ONNX export, label checking and runtime validation without replacing the website model |
 | `site/ml/requirements.txt` | Exact Python 3.12 dependency versions verified for the project virtual environment |
 | `site/scripts/verify-build.mjs` | Dependency-free build verification |
@@ -81,6 +82,8 @@ were verified as 37,266 and 19,690 respectively before upload, and
 `git lfs pull`, then extract both archives into `site/ml/data/`. The archive
 README records the Kaggle source, listed `DbCL-1.0` license and restore steps.
 
+This backup was re-audited on 4 September 2026: both archives are already present on the GitHub remote, `git lfs fsck` passed, and their SHA-256 hashes match `SHA256SUMS.txt`. The breed archive is 614,609,920 bytes and the coat archive is 358,492,672 bytes (about 928 MiB together). The visible `ml/data/breeds/` and `ml/data/coats/` folders are deliberately ignored by Git because committing 56,956 individual images would be impractical; the tracked archives reproduce those folders exactly after extraction.
+
 Preparation excluded source classes with fewer than 100 images and capped each included class at 2,500 images. It merges `Applehead Siamese` into `Siamese`, and both hairless aliases into `Sphynx`. Pattern folders such as Calico, Tabby, Torbie, Tortoiseshell and Tuxedo are excluded from breed training and routed to coat training. Trait/ambiguous folders such as `Extra-Toes Cat - Hemingway Polydactyl`, `Chinchilla`, and `Oriental Tabby` are excluded from breed training.
 
 Image decoding validation was skipped during preparation because Pillow was not installed at that moment. Pillow is installed now, but a full prepared-image validation pass is still pending. The report's `rejected_images: []` therefore means “none checked and rejected,” not proof that every file decodes correctly.
@@ -100,28 +103,27 @@ python -m pip install -r ml\requirements.txt
 python -m pip check
 ```
 
-Installed PyTorch is CPU-only (`torch 2.14.0+cpu`), CUDA is unavailable, and PyTorch detected four CPU threads. The environment passed `pip check` and imported all eight direct dependencies on 4 September 2026. A six-epoch coat linear-probe run was started but stopped cleanly at the user's request before epoch 1 completed. No `best.pt`, labels, evaluation result, or candidate ONNX was created. No trained candidate was promoted to `site/build/models/`.
+The previous environment used CPU-only PyTorch (`torch 2.14.0+cpu`), so CUDA was unavailable on this computer. On 4 September 2026 its `.venv` was found to reference a missing base Python 3.12 installation; recreate it from the commands above before any local ML run. A prior full-fine-tune breed attempt reached validation macro recall 0.2401 after three epochs and was interrupted during epoch 4. Its outputs were deliberately removed: the replacement staged approach below cannot resume that incompatible run. No trained candidate has been promoted to `site/build/models/`.
 
 ### Exact next-session ML steps
 
 1. Do not rerun `prepare_data.py` over the populated output folders. It intentionally refuses to do so, and the raw source folder has been removed. Review `ml/data/preparation-report.json` first.
 2. Add or run a decode audit over both prepared datasets before training. Remove or replace unreadable source images, then regenerate the split deliberately if any are found.
-3. Prefer a CUDA-capable computer or a hosted notebook for the final run. The local four-thread CPU did not finish one coat epoch in the available session.
-4. If continuing locally, establish a one-epoch timing/quality baseline first:
+3. Train on the user's CUDA-capable second device. Clone the repository, run `git lfs pull`, extract both archives into `site/ml/data`, then create a fresh `site/.venv`; do not copy the virtual environment.
+4. Run the two separate staged trainers:
 
 ```powershell
 cd site
 .\.venv\Scripts\Activate.ps1
-python ml\train.py --data ml\data\coats --epochs 1 --output ml\output\coat --batch-size 64
-python ml\evaluate.py --data ml\data\coats --checkpoint ml\output\coat\best.pt --output ml\output\coat
-
-python ml\train.py --data ml\data\breeds --epochs 1 --output ml\output\breed --batch-size 64
-python ml\evaluate.py --data ml\data\breeds --checkpoint ml\output\breed\best.pt --output ml\output\breed
+python ml\train_breed.py
+python ml\evaluate_breed.py
+python ml\train_coat.py
+python ml\evaluate_coat.py
 ```
 
-5. Treat these one-epoch runs as baselines, not deployable models. For a final run, increase epochs and use `--fine-tune` on GPU, then inspect macro F1, every per-label recall, and the confusion matrix.
+5. Each standalone trainer has a three-epoch frozen-head warm-up followed by full ResNet18 fine-tuning through epoch 14. Inspect `training-curves.png`, `evaluation-results.json`, per-label recall, confusion matrix, and `ml/output/model-comparison.png`; do not choose from training accuracy alone.
 6. Do not deploy the current eight-class coat data until missing coat classes and an unknown/other strategy are added. A closed-set softmax score is not reliable out-of-distribution confidence.
-7. Export and integrate only candidates that pass the agreed release gate. Keep the current website model untouched until then.
+7. Bring back the chosen `best.pth`, `labels.json`, training history and test report from the other device. Export and integrate only candidates that pass the agreed release gate. Keep the current website model untouched until then.
 
 `export_for_catdex.py` verifies that the labels match the checkpoint, validates the ONNX graph, and performs one CPU Runtime inference before reporting success. It derives the correct sidecar name from the output (for example, `cat-coat-labels.json` for a coat candidate).
 
@@ -164,6 +166,16 @@ The field log includes a date-seeded cat fact over a generated cat-lounge backgr
 ### Map
 
 The map is intentionally illustrative rather than geographically precise. Region markers aggregate the number of saved cats per broad region. Selecting a marker filters the collection; it does not reveal an underlying coordinate.
+
+Directly below the regional map, CAT Trails provides a small keyboard-and-touch exploration game. The user chooses any cat in the current stash, moves it with WASD, arrow keys, or the on-screen direction pad, and discovers six fictional Singapore-inspired community stops. Each cat has independent position, step count and discovery progress under `catdex.trails.v1` in `localStorage`. These game coordinates are fictional and never represent stored sighting locations.
+
+### CAT Trails continuation state
+
+The visual completion dialog has been added in `index.html` and `styles.css`: it has a Golden Paw badge, celebration effect, and `PLAY AGAIN` / `FINISH FOR NOW` buttons. The JavaScript trigger is **not yet connected**. The next developer must open this dialog when the sixth landmark is found, reset only the selected cat's trail state for `PLAY AGAIN`, and close/focus the game for `FINISH FOR NOW`.
+
+The current collision logic blocks only a few rectangular building areas. It does not yet prevent movement through every tree, bush, flower bed, lawn, or waterway. The intended replacement is artwork-aware path collision: use the actual `cat-trails-singapore-map.png` as a collision source and allow only paved/path pixels plus bridge zones. Do not reintroduce unrestricted grass/water movement.
+
+The game work remains local and unpushed as of this handover update. Before pushing, run `npm.cmd run build`, `node --check build/app.js`, review `git diff --check`, stage all intended files, inspect the staged diff, run `git lfs fsck`, then commit and push `main`.
 
 ### WebMCP
 

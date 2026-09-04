@@ -9,7 +9,7 @@
     <meta property="og:description" content="Build your own pixel-art field guide of cats spotted across Singapore." />
     <meta property="og:image" content="./assets/og.png" />
     <title>CATDEX — Spot. Snap. Stash.</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260904-trails2" />
   </head>
   <body>
     <div class="app-shell">
@@ -124,6 +124,54 @@
           <div class="map-privacy"><span aria-hidden="true">▣</span><p><strong>Why only broad regions?</strong> Exact locations can put community cats at risk. CATDEX discards precise coordinates and keeps only one of six general areas.</p></div>
         </section>
 
+        <section class="section trail-section" id="trail" aria-labelledby="trailTitle">
+          <div class="section-heading trail-heading">
+            <div>
+              <p class="eyebrow">CAT TRAILS // MINI ADVENTURE</p>
+              <h2 id="trailTitle">Explore Singapore together</h2>
+              <p>Pick a companion from your Catdex and wander through a little Singapore neighbourhood. Six cat-friendly discoveries are waiting along the trail.</p>
+            </div>
+            <div class="trail-key-hint" aria-hidden="true"><span>WASD</span><span>ARROW KEYS</span></div>
+          </div>
+
+          <div class="trail-console">
+            <aside class="trail-sidebar" aria-label="Explorer setup and controls">
+              <label class="trail-selector" for="trailCatSelect">
+                <span>CHOOSE YOUR EXPLORER</span>
+                <select id="trailCatSelect"></select>
+              </label>
+              <div class="trail-passport" id="trailPassport">
+                <div class="trail-passport-photo" id="trailPassportPhoto" aria-hidden="true"></div>
+                <div><small>NOW EXPLORING</small><strong id="trailCatName">Choose a cat</strong><span id="trailCatType">From your Catdex stash</span></div>
+              </div>
+              <div class="trail-discovery-list" id="trailDiscoveryList" aria-label="Trail discoveries"></div>
+              <div class="trail-dpad" aria-label="Movement controls">
+                <button type="button" data-trail-move="up" aria-label="Move up">▲</button>
+                <button type="button" data-trail-move="left" aria-label="Move left">◀</button>
+                <button type="button" data-trail-move="down" aria-label="Move down">▼</button>
+                <button type="button" data-trail-move="right" aria-label="Move right">▶</button>
+              </div>
+              <p class="trail-help">Click or tap a path to walk there. You can also use WASD, arrow keys, or the direction pad.</p>
+              <button class="trail-reset" id="trailResetButton" type="button">RESET THIS TRAIL</button>
+            </aside>
+
+            <div class="trail-game-column">
+              <div class="trail-hud">
+                <span><small>AREA</small><strong id="trailArea">CENTRAL GREEN</strong></span>
+                <span><small>DISCOVERED</small><strong id="trailProgress">0 / 6</strong></span>
+                <span><small>STEPS</small><strong id="trailSteps">000</strong></span>
+              </div>
+              <div class="trail-viewport" id="trailViewport" tabindex="0" aria-label="Playable CATDEX Singapore trail. Use arrow keys or WASD to move your selected cat.">
+                <img class="trail-map-art" src="./assets/cat-trails-singapore-map.png" alt="An original top-down 16-bit Singapore-inspired neighbourhood with gardens, water and community spaces" />
+                <div class="trail-landmarks" id="trailLandmarks" aria-hidden="true"></div>
+                <div class="trail-player" id="trailPlayer" aria-hidden="true"></div>
+                <div class="trail-focus-prompt" id="trailFocusPrompt">CLICK A PATH TO WALK</div>
+              </div>
+              <p class="trail-message" id="trailMessage" role="status" aria-live="polite">Choose your explorer and begin walking.</p>
+            </div>
+          </div>
+        </section>
+
         <section class="future-banner">
           <span class="future-icon" aria-hidden="true">✦</span>
           <div><p class="eyebrow">BUILT TO GROW</p><h2>Cats first. More creatures later.</h2><p>The collection engine is designed around species packs, so dogs, birds, butterflies and other wildlife can join the field guide in future releases.</p></div>
@@ -199,6 +247,20 @@
       </article>
     </dialog>
 
+    <dialog class="trail-complete-modal" id="trailCompleteModal" aria-labelledby="trailCompleteTitle">
+      <article class="trail-complete-card">
+        <div class="trail-confetti" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <p class="eyebrow">ALL SIX STOPS DISCOVERED</p>
+        <div class="trail-complete-badge" aria-hidden="true">★</div>
+        <h2 id="trailCompleteTitle">Trail complete!</h2>
+        <p><strong id="trailCompleteCat">Your explorer</strong> completed the Singapore neighbourhood trail and earned the Golden Paw badge.</p>
+        <div class="trail-complete-actions">
+          <button class="primary-button" id="trailPlayAgainButton" type="button">PLAY AGAIN</button>
+          <button class="secondary-button" id="trailFinishButton" type="button">FINISH FOR NOW</button>
+        </div>
+      </article>
+    </dialog>
+
     <aside class="expert-chat" id="expertChat" aria-label="Miso the cat expert" aria-hidden="true">
       <div class="chat-heading">
         <div class="chat-avatar"><img src="./assets/miso-cat-expert.png" alt="" /></div>
@@ -230,6 +292,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <script src="./vendor/ort.min.js" defer></script>
-    <script src="./app.js" defer></script>
+    <script src="./app.js?v=20260904-trails2" defer></script>
   </body>
 </html>
