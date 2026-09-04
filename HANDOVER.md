@@ -299,4 +299,5 @@ user_unlocks
 - Reformatted the ML scripts for readability and made their label-related messages work for both breed and coat training.
 - Removed an ignored 5.8 MB `.local-backups/site-git/` copy of the retired nested Git metadata. It was not used by the current repository and is not recoverable from the workspace after deletion.
 - Kept all build images, the browser ONNX model, its labels and ONNX Runtime vendor files because reference checks confirmed they are active.
-- Did not commit, push or deploy these changes; they remain local for review.
+- Committed and pushed the cleanup plus verified Git LFS dataset backup to
+  GitHub `main` on 4 September 2026. No OpenAI Sites deployment was performed.
