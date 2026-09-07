@@ -234,6 +234,8 @@ Browser visual QA and WebMCP contract execution were not available in the curren
 8. The app has no automated interaction tests.
 9. The OpenAI Sites project is configured for public static hosting. The current deployment intentionally omits the 47 MB `cat-breed-resnet18.onnx` file because the host accepts files up to 25 MB. Facts, artwork, CAT Trails and the local coat/fallback analyser remain deployed; breed inference falls back when the model is absent. The full model remains in the local project and GitHub backup for later deployment to a host that permits it.
 
+GitHub Pages is now configured as the preferred independent host through `.github/workflows/pages.yml`. It publishes the complete `site/build` directory, including the 47 MB browser model, whenever `main` is pushed. After the first successful workflow run, the project URL should be `https://shun-ren.github.io/CAT-POKEDEX/`. GitHub Pages must be enabled for the repository's Actions deployment source; if the workflow is waiting for permission, open the repository's Settings → Pages and select GitHub Actions.
+
 ## 8. Recommended roadmap
 
 ### Phase 1 — harden the prototype
