@@ -160,6 +160,10 @@ Object.assign(els, {
   trailArea: document.querySelector('#trailArea'),
   trailProgress: document.querySelector('#trailProgress'),
   trailSteps: document.querySelector('#trailSteps'),
+  trailCompleteModal: document.querySelector('#trailCompleteModal'),
+  trailCompleteCat: document.querySelector('#trailCompleteCat'),
+  trailPlayAgainButton: document.querySelector('#trailPlayAgainButton'),
+  trailFinishButton: document.querySelector('#trailFinishButton'),
   trailMessage: document.querySelector('#trailMessage')
 });
 
@@ -352,7 +356,16 @@ function renderTrailGame() {
   }).join('');
 }
 
-function discoverTrailLandmark(state) {
+function celebrateCompletedTrail(cat) {
+  if (!els.trailCompleteModal || els.trailCompleteModal.open) return;
+  els.trailCompleteCat.textContent = cat?.nickname || 'Your explorer';
+  els.trailCompleteModal.showModal();
+  playTone(1040, .14);
+  window.setTimeout(() => playTone(1320, .16), 130);
+  window.setTimeout(() => playTone(1560, .20), 270);
+}
+
+function discoverTrailLandmark(state, cat) {
   const landmark = TRAIL_LANDMARKS.find(item => !state.discoveries.includes(item.id) && Math.hypot(state.x-item.x, state.y-item.y) < 5.5);
   if (!landmark) return false;
   state.discoveries.push(landmark.id);
@@ -360,6 +373,7 @@ function discoverTrailLandmark(state) {
   showToast(`${landmark.name.toUpperCase()} DISCOVERED!`);
   playTone(780, .10);
   window.setTimeout(() => playTone(980, .12), 100);
+  if (state.discoveries.length === TRAIL_LANDMARKS.length) celebrateCompletedTrail(cat);
   return true;
 }
 
@@ -374,7 +388,7 @@ function moveTrail(direction) {
   state.x = nextX;
   state.y = nextY;
   state.steps += 1;
-  const discovered = discoverTrailLandmark(state);
+  const discovered = discoverTrailLandmark(state, cat);
   if (!discovered) els.trailMessage.textContent = `${cat.nickname || 'Your cat'} is exploring ${trailAreaFor(state.x, state.y).toLowerCase()}.`;
   saveTrailStates();
   renderTrailGame();
@@ -392,17 +406,17 @@ function walkTrailTo(targetX, targetY) {
   state.x = destinationX;
   state.y = destinationY;
   state.steps += segments;
-  const discovered = discoverTrailLandmark(state);
+  const discovered = discoverTrailLandmark(state, cat);
   if (!discovered) els.trailMessage.textContent = `${cat.nickname || 'Your cat'} walked to ${trailAreaFor(state.x, state.y).toLowerCase()}.`;
   saveTrailStates();
   renderTrailGame();
 }
 
-function resetTrail() {
+function resetTrail(message = 'Trail reset. Start again from Central Green.') {
   if (!currentTrailCatId) return;
   trailStates[currentTrailCatId] = { x:43, y:57, steps:0, discoveries:[] };
   saveTrailStates();
-  els.trailMessage.textContent = 'Trail reset. Start again from Central Green.';
+  els.trailMessage.textContent = message;
   renderTrailGame();
 }
 
@@ -881,6 +895,19 @@ els.trailCatSelect.addEventListener('change', () => {
   els.trailViewport.focus();
 });
 document.querySelector('#trailResetButton').addEventListener('click', resetTrail);
+els.trailPlayAgainButton.addEventListener('click', () => {
+  els.trailCompleteModal.close();
+  resetTrail('A new trail begins. Find all six stops again!');
+  els.trailViewport.focus();
+});
+els.trailFinishButton.addEventListener('click', () => {
+  els.trailCompleteModal.close();
+  els.trailMessage.textContent = 'Golden Paw earned. Your completed trail is saved for this explorer.';
+  els.trailViewport.focus();
+});
+els.trailCompleteModal.addEventListener('close', () => {
+  window.requestAnimationFrame(() => els.trailViewport.focus());
+});
 document.querySelectorAll('[data-trail-move]').forEach(button => {
   button.addEventListener('click', () => {
     moveTrail(button.dataset.trailMove);

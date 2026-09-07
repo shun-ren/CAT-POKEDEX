@@ -171,11 +171,9 @@ Directly below the regional map, CAT Trails provides a small keyboard-and-touch 
 
 ### CAT Trails continuation state
 
-The visual completion dialog has been added in `index.html` and `styles.css`: it has a Golden Paw badge, celebration effect, and `PLAY AGAIN` / `FINISH FOR NOW` buttons. The JavaScript trigger is **not yet connected**. The next developer must open this dialog when the sixth landmark is found, reset only the selected cat's trail state for `PLAY AGAIN`, and close/focus the game for `FINISH FOR NOW`.
+The CAT Trails completion dialog is connected. Finding the sixth stop opens the Golden Paw celebration for that explorer; `PLAY AGAIN` resets only that cat's trail, while `FINISH FOR NOW` keeps its completed trail saved and returns keyboard focus to the map. The dialog also returns focus after an Escape-key close.
 
 CAT Trails now uses the lightweight original rule: its boundary limits keep the explorer on the map, but there is no obstacle collision. This was restored because the attempted building collisions made movement feel worse. Player movement uses CSS interpolation and avoids recreating the avatar on every step, which makes keyboard, touch-pad and click-to-walk movement smoother. If path-aware collision is reconsidered later, it needs a tested walkability map rather than broad rectangle guesses.
-
-The visual completion dialog remains unconnected. The next developer must open it when the sixth landmark is found, reset only the selected cat's trail state for `PLAY AGAIN`, and close/focus the game for `FINISH FOR NOW`.
 
 ### WebMCP
 
