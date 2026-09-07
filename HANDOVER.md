@@ -173,9 +173,9 @@ Directly below the regional map, CAT Trails provides a small keyboard-and-touch 
 
 The visual completion dialog has been added in `index.html` and `styles.css`: it has a Golden Paw badge, celebration effect, and `PLAY AGAIN` / `FINISH FOR NOW` buttons. The JavaScript trigger is **not yet connected**. The next developer must open this dialog when the sixth landmark is found, reset only the selected cat's trail state for `PLAY AGAIN`, and close/focus the game for `FINISH FOR NOW`.
 
-The current collision logic blocks only a few rectangular building areas. It does not yet prevent movement through every tree, bush, flower bed, lawn, or waterway. The intended replacement is artwork-aware path collision: use the actual `cat-trails-singapore-map.png` as a collision source and allow only paved/path pixels plus bridge zones. Do not reintroduce unrestricted grass/water movement.
+CAT Trails now uses the lightweight original rule: its boundary limits keep the explorer on the map, but there is no obstacle collision. This was restored because the attempted building collisions made movement feel worse. Player movement uses CSS interpolation and avoids recreating the avatar on every step, which makes keyboard, touch-pad and click-to-walk movement smoother. If path-aware collision is reconsidered later, it needs a tested walkability map rather than broad rectangle guesses.
 
-The game work remains local and unpushed as of this handover update. Before pushing, run `npm.cmd run build`, `node --check build/app.js`, review `git diff --check`, stage all intended files, inspect the staged diff, run `git lfs fsck`, then commit and push `main`.
+The visual completion dialog remains unconnected. The next developer must open it when the sixth landmark is found, reset only the selected cat's trail state for `PLAY AGAIN`, and close/focus the game for `FINISH FOR NOW`.
 
 ### WebMCP
 
@@ -234,7 +234,7 @@ Browser visual QA and WebMCP contract execution were not available in the curren
 6. The catalogue is illustrative and incomplete.
 7. Accessibility needs browser testing, including keyboard focus, dialog behaviour, colour contrast and screen-reader output.
 8. The app has no automated interaction tests.
-9. The OpenAI Sites project was created, but the source push and production deployment were not completed in the original session.
+9. The OpenAI Sites project is configured for static hosting. Check the current deployment status before assuming that a public or shareable URL exists.
 
 ## 8. Recommended roadmap
 

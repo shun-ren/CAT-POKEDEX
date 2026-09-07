@@ -10,15 +10,6 @@ const TRAIL_LANDMARKS = [
   { id:'raintree', name:'Rain Tree Loop', region:'East', x:85, y:51, message:'A huge rain tree makes a cool green canopy over the park trail.' },
   { id:'bridge', name:'Canal Footbridge', region:'North-East', x:61, y:69, message:'The canal sparkles below the footbridge. You discovered all the best breezy spots.' }
 ];
-const TRAIL_OBSTACLES = [
-  { x1:2, y1:2, x2:35, y2:12 },
-  { x1:2, y1:13, x2:13, y2:31 },
-  { x1:30, y1:12, x2:37, y2:31 },
-  { x1:10, y1:27, x2:21, y2:38 },
-  { x1:25, y1:27, x2:34, y2:38 },
-  { x1:49, y1:12, x2:66, y2:29 },
-  { x1:4, y1:45, x2:27, y2:58 }
-];
 const CAT_FACTS = [
   'Cats use their whiskers to sense nearby objects and openings, even in low light. Whiskers are sensitive tools, so they should never be trimmed.',
   'A slow blink is often a relaxed, friendly signal. Try softly closing your eyes and looking slightly away instead of staring.',
@@ -180,6 +171,7 @@ let analysisSequence = 0;
 let sightings = loadSightings();
 let trailStates = loadTrailStates();
 let currentTrailCatId = sightings[0]?.id || '';
+let renderedTrailCatId = '';
 
 function loadSightings() {
   try {
@@ -323,22 +315,26 @@ function renderTrailGame() {
   const cat = sightings.find(item => item.id === currentTrailCatId);
   if (!cat || !els.trailPlayer) return;
   const state = trailStateFor(cat.id);
-  const portrait = uploadedPortrait(cat, 'trail-avatar-image');
+  if (renderedTrailCatId !== cat.id) {
+    const portrait = uploadedPortrait(cat, 'trail-avatar-image');
 
-  els.trailCatName.textContent = cat.nickname || 'Mystery cat';
-  els.trailCatType.textContent = `${cat.coat || 'Unknown coat'} · ${cat.breed}`;
-  els.trailPlayer.innerHTML = portrait;
-  els.trailPassportPhoto.innerHTML = portrait;
+    els.trailCatName.textContent = cat.nickname || 'Mystery cat';
+    els.trailCatType.textContent = `${cat.coat || 'Unknown coat'} · ${cat.breed}`;
+    els.trailPlayer.innerHTML = portrait;
+    els.trailPassportPhoto.innerHTML = portrait;
 
-  if (cat.photo) {
-    els.trailPlayer.style.backgroundImage = 'none';
-    els.trailPassportPhoto.style.backgroundImage = 'none';
-  } else {
-    const position = spritePosition(cat.sprite ?? 0);
-    els.trailPlayer.style.backgroundImage = "url('./assets/cat-sprite-atlas.png')";
-    els.trailPassportPhoto.style.backgroundImage = "url('./assets/cat-sprite-atlas.png')";
-    els.trailPlayer.style.backgroundPosition = position;
-    els.trailPassportPhoto.style.backgroundPosition = position;
+    if (cat.photo) {
+      els.trailPlayer.style.backgroundImage = 'none';
+      els.trailPassportPhoto.style.backgroundImage = 'none';
+    } else {
+      const position = spritePosition(cat.sprite ?? 0);
+      els.trailPlayer.style.backgroundImage = "url('./assets/cat-sprite-atlas.png')";
+      els.trailPassportPhoto.style.backgroundImage = "url('./assets/cat-sprite-atlas.png')";
+      els.trailPlayer.style.backgroundPosition = position;
+      els.trailPassportPhoto.style.backgroundPosition = position;
+    }
+
+    renderedTrailCatId = cat.id;
   }
 
   els.trailPlayer.style.left = `${state.x}%`;
@@ -354,10 +350,6 @@ function renderTrailGame() {
     const found = state.discoveries.includes(landmark.id);
     return `<span class="trail-landmark ${found ? 'found' : ''}" style="left:${landmark.x}%;top:${landmark.y}%">${found ? '★' : '?'}</span>`;
   }).join('');
-}
-
-function trailPositionBlocked(x, y) {
-  return TRAIL_OBSTACLES.some(obstacle => x > obstacle.x1 && x < obstacle.x2 && y > obstacle.y1 && y < obstacle.y2);
 }
 
 function discoverTrailLandmark(state) {
@@ -379,12 +371,6 @@ function moveTrail(direction) {
   const [dx, dy] = movements[direction] || [0,0];
   const nextX = Math.max(3, Math.min(97, state.x + dx));
   const nextY = Math.max(4, Math.min(96, state.y + dy));
-  if (trailPositionBlocked(nextX, nextY)) {
-    els.trailMessage.textContent = 'That way is blocked. Try following the garden path.';
-    playTone(180, .04);
-    return;
-  }
-
   state.x = nextX;
   state.y = nextY;
   state.steps += 1;
@@ -392,9 +378,6 @@ function moveTrail(direction) {
   if (!discovered) els.trailMessage.textContent = `${cat.nickname || 'Your cat'} is exploring ${trailAreaFor(state.x, state.y).toLowerCase()}.`;
   saveTrailStates();
   renderTrailGame();
-  els.trailPlayer.classList.remove('walking');
-  void els.trailPlayer.offsetWidth;
-  els.trailPlayer.classList.add('walking');
 }
 
 function walkTrailTo(targetX, targetY) {
@@ -406,35 +389,13 @@ function walkTrailTo(targetX, targetY) {
   const distanceX = destinationX - state.x;
   const distanceY = destinationY - state.y;
   const segments = Math.max(1, Math.ceil(Math.max(Math.abs(distanceX) / 1.8, Math.abs(distanceY) / 2.6)));
-  let nextX = state.x;
-  let nextY = state.y;
-  let travelled = 0;
-
-  for (let step = 1; step <= segments; step++) {
-    const candidateX = state.x + distanceX * (step / segments);
-    const candidateY = state.y + distanceY * (step / segments);
-    if (trailPositionBlocked(candidateX, candidateY)) break;
-    nextX = candidateX;
-    nextY = candidateY;
-    travelled += 1;
-  }
-
-  if (!travelled) {
-    els.trailMessage.textContent = 'That spot is blocked. Choose a nearby path or garden lawn.';
-    playTone(180, .04);
-    return;
-  }
-
-  state.x = nextX;
-  state.y = nextY;
-  state.steps += travelled;
+  state.x = destinationX;
+  state.y = destinationY;
+  state.steps += segments;
   const discovered = discoverTrailLandmark(state);
   if (!discovered) els.trailMessage.textContent = `${cat.nickname || 'Your cat'} walked to ${trailAreaFor(state.x, state.y).toLowerCase()}.`;
   saveTrailStates();
   renderTrailGame();
-  els.trailPlayer.classList.remove('walking');
-  void els.trailPlayer.offsetWidth;
-  els.trailPlayer.classList.add('walking');
 }
 
 function resetTrail() {
