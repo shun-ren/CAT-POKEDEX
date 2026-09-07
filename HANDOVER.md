@@ -232,7 +232,7 @@ Browser visual QA and WebMCP contract execution were not available in the curren
 6. The catalogue is illustrative and incomplete.
 7. Accessibility needs browser testing, including keyboard focus, dialog behaviour, colour contrast and screen-reader output.
 8. The app has no automated interaction tests.
-9. The OpenAI Sites project is configured for static hosting. A 7 September 2026 deployment attempt failed because the active `cat-breed-resnet18.onnx` file is 47 MB while the hosting service accepts files up to 25 MB. The existing private URL therefore still serves the older version. A shareable production deployment needs either a host that permits the model file (for example GitHub Pages) or a redesigned model-delivery strategy; do not silently remove the working model just to publish.
+9. The OpenAI Sites project is configured for public static hosting. The current deployment intentionally omits the 47 MB `cat-breed-resnet18.onnx` file because the host accepts files up to 25 MB. Facts, artwork, CAT Trails and the local coat/fallback analyser remain deployed; breed inference falls back when the model is absent. The full model remains in the local project and GitHub backup for later deployment to a host that permits it.
 
 ## 8. Recommended roadmap
 
